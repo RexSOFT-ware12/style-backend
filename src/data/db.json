@@ -211,5 +211,21 @@
       "updatedAt": "2026-09-03T00:16:15.951Z"
     }
   ],
-  "users": []
+  "users": [
+    {
+      "id": "ldwkBzWqSr",
+      "name": "Test Buyer",
+      "email": "buyer_test1@example.com",
+      "passwordHash": "$2a$10$We8VgkwoCXPX5xQF5Ikfv.X24uIGwc8D6W5de/g48kfMtKznPD50y",
+      "createdAt": "2026-09-03T07:30:45.387Z"
+    },
+    {
+      "id": "kQNiyOVHy6",
+      "name": "Other",
+      "email": "other_test1@example.com",
+      "passwordHash": "$2a$10$TMvtp.JpBJLvizzthiUpLO0mlWZzPlZgEfOFVmh57COY.9b3K.XFq",
+      "createdAt": "2026-09-03T07:31:07.031Z"
+    }
+  ],
+  "orders": []
 }

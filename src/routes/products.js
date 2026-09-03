@@ -2,16 +2,38 @@ const express = require("express");
 const { nanoid } = require("nanoid");
 const { readDb, writeDb } = require("../db");
 const { requireAuth } = require("../middleware/auth");
-const { upload } = require("../middleware/upload");
+const { productUpload } = require("../middleware/upload");
 
 const router = express.Router();
 
+const STORAGE_BUCKET = process.env.STORAGE_BUCKET || "stream-public";
+const STORAGE_FOLDER = process.env.STORAGE_FOLDER || "bucket";
+
 function toPublicUrl(req, filename) {
+  if (process.env.GCS_PUBLIC_BASE_URL) {
+    return `${process.env.GCS_PUBLIC_BASE_URL.replace(/\/$/, "")}/${filename}`;
+  }
+
+  if (process.env.STORAGE_BUCKET || process.env.GCS_BUCKET_NAME) {
+    return `https://storage.googleapis.com/${STORAGE_BUCKET}/${STORAGE_FOLDER}/${filename}`;
+  }
+
   return `${req.protocol}://${req.get("host")}/uploads/${filename}`;
 }
 
+// Public serializer: never leak the internal storage filename for the
+// digital bundle — only enough metadata to show "what you get" on the
+// product page. The real file is only ever reachable through the gated,
+// auth+purchase-checked download route in routes/orders.js.
 function serialize(product) {
-  return product;
+  const { digitalFile, ...rest } = product;
+  return {
+    ...rest,
+    hasDigitalFile: Boolean(digitalFile),
+    digitalFile: digitalFile
+      ? { originalName: digitalFile.originalName, size: digitalFile.size }
+      : null,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -113,7 +135,7 @@ router.get("/:id", (req, res) => {
 // POST /api/products  (protected — dashboard only)
 // Accepts multipart/form-data (image file) OR plain JSON (image URL string).
 // ---------------------------------------------------------------------------
-router.post("/", requireAuth, upload.single("image"), (req, res) => {
+router.post("/", requireAuth, productUpload, (req, res) => {
   const body = req.body || {};
 
   if (!body.name || body.price === undefined) {
@@ -122,9 +144,21 @@ router.post("/", requireAuth, upload.single("image"), (req, res) => {
 
   const db = readDb();
 
-  const image = req.file
-    ? toPublicUrl(req, req.file.filename)
-    : body.image || "/images/NoImage.jpg";
+  const imageFile = req.files?.image?.[0];
+  const digitalFileUpload = req.files?.digitalFile?.[0];
+
+  const image = imageFile ? toPublicUrl(req, imageFile.filename) : body.image || "/images/NoImage.jpg";
+
+  const digitalFile = digitalFileUpload
+    ? {
+        // Internal-only reference used by the download route — never sent
+        // to the storefront (see serialize()).
+        fileName: digitalFileUpload.filename,
+        originalName: digitalFileUpload.originalname,
+        size: digitalFileUpload.size,
+        uploadedAt: new Date().toISOString(),
+      }
+    : null;
 
   const now = new Date().toISOString();
   const product = {
@@ -142,6 +176,7 @@ router.post("/", requireAuth, upload.single("image"), (req, res) => {
     description: body.description || "",
     image,
     images: [image],
+    digitalFile,
     featured: body.featured === "true" || body.featured === true,
     createdAt: now,
     updatedAt: now,
@@ -150,11 +185,11 @@ router.post("/", requireAuth, upload.single("image"), (req, res) => {
   db.products.unshift(product);
   writeDb(db);
 
-  res.status(201).json({ data: product });
+  res.status(201).json({ data: serialize(product) });
 });
 
 // PUT /api/products/:id (protected)
-router.put("/:id", requireAuth, upload.single("image"), (req, res) => {
+router.put("/:id", requireAuth, productUpload, (req, res) => {
   const db = readDb();
   const idx = db.products.findIndex((p) => String(p.id) === String(req.params.id));
   if (idx === -1) return res.status(404).json({ error: "Product not found" });
@@ -162,7 +197,24 @@ router.put("/:id", requireAuth, upload.single("image"), (req, res) => {
   const body = req.body || {};
   const existing = db.products[idx];
 
-  const image = req.file ? toPublicUrl(req, req.file.filename) : body.image || existing.image;
+  const imageFile = req.files?.image?.[0];
+  const digitalFileUpload = req.files?.digitalFile?.[0];
+
+  const image = imageFile ? toPublicUrl(req, imageFile.filename) : body.image || existing.image;
+
+  // Replacing the digital bundle: keep the old one unless a new .zip was
+  // uploaded, or the dashboard explicitly asked to clear it.
+  let digitalFile = existing.digitalFile || null;
+  if (digitalFileUpload) {
+    digitalFile = {
+      fileName: digitalFileUpload.filename,
+      originalName: digitalFileUpload.originalname,
+      size: digitalFileUpload.size,
+      uploadedAt: new Date().toISOString(),
+    };
+  } else if (body.clearDigitalFile === "true" || body.clearDigitalFile === true) {
+    digitalFile = null;
+  }
 
   const updated = {
     ...existing,
@@ -179,6 +231,7 @@ router.put("/:id", requireAuth, upload.single("image"), (req, res) => {
     description: body.description ?? existing.description,
     image,
     images: image ? [image] : existing.images,
+    digitalFile,
     featured: body.featured !== undefined ? body.featured === "true" || body.featured === true : existing.featured,
     updatedAt: new Date().toISOString(),
   };
@@ -186,7 +239,7 @@ router.put("/:id", requireAuth, upload.single("image"), (req, res) => {
   db.products[idx] = updated;
   writeDb(db);
 
-  res.json({ data: updated });
+  res.json({ data: serialize(updated) });
 });
 
 // PATCH /api/products/:id/stock (protected) — quick stock adjustment

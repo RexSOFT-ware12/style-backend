@@ -20,6 +20,7 @@ function defaultData() {
   return {
     products: [],
     users: [],
+    orders: [],
   };
 }
 

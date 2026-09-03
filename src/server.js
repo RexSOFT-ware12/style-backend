@@ -8,20 +8,48 @@ const fs = require("fs");
 const productsRouter = require("./routes/products");
 const authRouter = require("./routes/auth");
 const statsRouter = require("./routes/stats");
+const ordersRouter = require("./routes/orders");
 const { readDb } = require("./db");
+
+function resolveUploadDir() {
+  const candidates = [
+    path.resolve(process.cwd(), "uploads"),
+    path.resolve(__dirname, "..", "uploads"),
+    path.resolve("/tmp", "fabricnow-uploads"),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      fs.mkdirSync(candidate, { recursive: true });
+      return candidate;
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+
+  throw new Error("Could not create a writable upload directory.");
+}
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(cors()); // allow the Next.js storefront (3000) and the Vite dashboard (5173) to call this API
 app.use(morgan("dev"));
+
+// Stripe webhook needs the raw, unparsed request body to verify its
+// signature — it must be registered BEFORE express.json() below.
+app.use("/api/orders/webhook", express.raw({ type: "application/json" }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded product images
-const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-app.use("/uploads", express.static(UPLOAD_DIR));
+// Serve uploaded product images when using local filesystem uploads.
+// If this app is configured for Google Cloud Storage, image URLs are generated
+// directly to the bucket path instead of serving files from /uploads.
+const UPLOAD_DIR = resolveUploadDir();
+if (!process.env.STORAGE_BUCKET && !process.env.GCS_BUCKET_NAME) {
+  app.use("/uploads", express.static(UPLOAD_DIR));
+}
 
 // Auto-seed on first run so the app isn't empty out of the box
 const db = readDb();
@@ -46,6 +74,10 @@ app.get("/", (req, res) => {
       "POST   /api/auth/signin",
       "GET    /api/auth/me         (auth required)",
       "GET    /api/stats",
+      "POST   /api/orders/checkout           (auth required) — creates a Stripe Checkout Session",
+      "POST   /api/orders/webhook            (Stripe only)",
+      "GET    /api/orders/me                 (auth required) — order/purchase history",
+      "GET    /api/orders/:orderId/download/:productId (auth required) — gated file download",
     ],
   });
 });
@@ -53,6 +85,7 @@ app.get("/", (req, res) => {
 app.use("/api/products", productsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/stats", statsRouter);
+app.use("/api/orders", ordersRouter);
 
 // 404 handler
 app.use((req, res) => {
