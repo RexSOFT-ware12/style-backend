@@ -1,51 +1,34 @@
 /**
- * Tiny file-backed JSON "database".
+ * MongoDB connection (Mongoose).
  *
- * This project intentionally avoids a native DB engine (Postgres/MySQL/SQLite)
- * so it runs anywhere with zero setup — perfect for local dev while you wire
- * the dashboard + storefront together. Swapping this for a real DB later only
- * means rewriting the functions in this file; every route just calls these.
+ * Requires MONGODB_URI to be set (e.g. a MongoDB Atlas connection string) in
+ * backend/.env:
  *
- * Data is persisted to src/data/db.json and re-read/written on every request.
- * That's plenty fast for an admin dashboard + storefront at this scale, and
- * it means the dashboard and the storefront are ALWAYS looking at the same
- * file — which is exactly the "both stay in sync" behavior you asked for.
+ *   MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/fabricnow
+ *
+ * connectDB() is called once from server.js before the app starts listening.
  */
-const fs = require("fs");
-const path = require("path");
+const mongoose = require("mongoose");
 
-const DB_PATH = path.join(__dirname, "data", "db.json");
+async function connectDB() {
+  const uri = process.env.MONGODB_URI;
 
-function defaultData() {
-  return {
-    products: [],
-    users: [],
-    orders: [],
-  };
-}
-
-function ensureFile() {
-  if (!fs.existsSync(DB_PATH)) {
-    fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-    fs.writeFileSync(DB_PATH, JSON.stringify(defaultData(), null, 2));
+  if (!uri) {
+    throw new Error(
+      "MONGODB_URI is not set. Add it to backend/.env, e.g.\n" +
+        "  MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/fabricnow"
+    );
   }
+
+  mongoose.connection.on("connected", () => {
+    console.log(`MongoDB connected (${mongoose.connection.name})`);
+  });
+  mongoose.connection.on("error", (err) => {
+    console.error("MongoDB connection error:", err.message);
+  });
+
+  await mongoose.connect(uri);
+  return mongoose.connection;
 }
 
-function readDb() {
-  ensureFile();
-  const raw = fs.readFileSync(DB_PATH, "utf-8");
-  try {
-    return JSON.parse(raw);
-  } catch (err) {
-    console.error("db.json was corrupted, resetting to defaults:", err);
-    const fresh = defaultData();
-    writeDb(fresh);
-    return fresh;
-  }
-}
-
-function writeDb(data) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-}
-
-module.exports = { readDb, writeDb, DB_PATH };
+module.exports = { connectDB, mongoose };

@@ -23,6 +23,7 @@ function resolveUploadDir() {
 }
 
 const UPLOAD_DIR = resolveUploadDir();
+const MAX_UPLOAD_SIZE = 1000 * 1024 * 1024;
 
 // Digital product assets (the .zip bundles containing .zprj + pattern files)
 // are stored separately from images, and are NEVER served statically —
@@ -67,11 +68,16 @@ function digitalFileFilter(req, file, cb) {
 const uploadDigital = multer({
   storage: digitalStorage,
   fileFilter: digitalFileFilter,
-  limits: { fileSize: 500 * 1024 * 1024 }, // up to 500MB — these bundles can be large
+  limits: { fileSize: MAX_UPLOAD_SIZE }, // up to 1000MB — these bundles can be large
 });
 
-// Combined uploader for the "create/edit product" form: an optional preview
-// image ("image") and an optional digital deliverable ("digitalFile").
+// Combined uploader for the "create/edit product" form:
+//  - "image"       — the primary hero shot(s) (fabric worn on an AI model),
+//                    1 or more files — these auto-swipe on the storefront
+//  - "fabricImage" — a close-up of the fabric itself, 1 file
+//  - "images"      — extra on-model gallery shots (same garment, different
+//                    angles/styles), up to 6 files
+//  - "digitalFile" — the .zip deliverable, 1 file
 // Each field needs its own filter/limits, so we route by fieldname.
 const productUpload = multer({
   storage: multer.diskStorage({
@@ -88,10 +94,44 @@ const productUpload = multer({
     if (file.fieldname === "digitalFile") return digitalFileFilter(req, file, cb);
     return fileFilter(req, file, cb);
   },
-  limits: { fileSize: 500 * 1024 * 1024 },
+  limits: { fileSize: MAX_UPLOAD_SIZE },
+}).fields([
+  { name: "image", maxCount: 6 },
+  { name: "fabricImage", maxCount: 1 },
+  { name: "images", maxCount: 6 },
+  { name: "digitalFile", maxCount: 1 },
+]);
+
+// Uploader for the "Add Design Pattern" admin form:
+//  - "image"       — the source PNG/raster artwork to trace into an SVG
+//  - "digitalFile" — the .zip deliverable, same as regular products
+const designPatternUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, file.fieldname === "digitalFile" ? DIGITAL_DIR : UPLOAD_DIR);
+    },
+    filename: (req, file, cb) => {
+      if (file.fieldname === "digitalFile") return cb(null, `${nanoid(14)}.zip`);
+      const ext = path.extname(file.originalname) || ".png";
+      cb(null, `${nanoid(12)}${ext}`);
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === "digitalFile") return digitalFileFilter(req, file, cb);
+    return fileFilter(req, file, cb);
+  },
+  limits: { fileSize: MAX_UPLOAD_SIZE },
 }).fields([
   { name: "image", maxCount: 1 },
   { name: "digitalFile", maxCount: 1 },
 ]);
 
-module.exports = { upload, uploadDigital, productUpload, UPLOAD_DIR, DIGITAL_DIR };
+module.exports = {
+  upload,
+  uploadDigital,
+  productUpload,
+  designPatternUpload,
+  UPLOAD_DIR,
+  DIGITAL_DIR,
+  MAX_UPLOAD_SIZE,
+};

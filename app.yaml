@@ -1,9 +1,18 @@
 runtime: nodejs22
 env: standard
-instance_class: F2
+instance_class: F4_1G
 entrypoint: node src/server.js
+
+# min_instances keeps one instance warm at all times. Without this, App
+# Engine standard scales down to zero when idle, and the next request has
+# to cold-boot a fresh Node instance before it can even talk to GCS — which
+# was intermittently blowing past Next.js's ~7s image-optimizer timeout
+# ("upstream image response timed out") on the storefront.
+automatic_scaling:
+  min_instances: 1
 
 env_variables:
   NODE_ENV: "production"
-  STORAGE_BUCKET: "stream-public"
-  STORAGE_FOLDER: "bucket"
+  STORAGE_BUCKET: "fabric-now"
+  STORAGE_FOLDER: "FabricNow"
+  JWT_SECRET: "nevermissmytarget"

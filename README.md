@@ -1,94 +1,64 @@
-# FabricNow API
+# Product image normalization (HD + consistent size)
 
-The shared backend for **both** the FabricNow storefront (Next.js, port 3000)
-and the FabricNow Admin Dashboard (Vite, port 5173). Add, edit, or delete a
-product from the dashboard and it shows up on the storefront instantly (and
-vice‑versa for reads) — both apps read the same `/api/products` endpoint,
-so nothing goes out of sync anymore.
+## What changed
+- **`package.json`** — added the `sharp` dependency.
+- **`src/middleware/processImage.js`** (new) — after a product image is
+  uploaded, resizes/crops it to a fixed 1600x1600 square and re-encodes it
+  as a high-quality JPEG (quality 90). This runs no matter what the seller
+  uploads: any resolution, orientation, or format (jpg/png/webp/etc.) — the
+  file saved to disk (and served to the storefront) is always the same
+  square size and quality.
+- **`src/routes/products.js`** — `processProductImage` is now run right
+  after `productUpload` on both `POST /api/products` and
+  `PUT /api/products/:id`, before the file's name is turned into the public
+  image URL. Nothing else in the request flow changed.
 
-## 1. Install & run
+## Install
+From your `style-backend` project root, drop these three files into place
+(overwriting the existing `products.js` and `package.json`, adding the new
+`processImage.js`), then:
 
 ```bash
-cd backend
 npm install
-npm run seed     # one-time: creates src/data/db.json with 10 starter products
-npm run dev       # http://localhost:4000  (auto-restarts on file changes)
-# or: npm start
 ```
 
-No database server to install — data is persisted to `src/data/db.json`
-(plain JSON file). Swap `src/db.js` for a real database later without
-touching any route files.
+That pulls in `sharp` (it ships prebuilt binaries, no extra system
+dependencies needed on Linux/Mac/Windows).
 
-Uploaded product images are written to `backend/uploads/` and served at
-`http://localhost:4000/uploads/<file>`.
+## How it behaves
+- Upload a huge 6000x4000 photo → cropped centered to 1600x1600, quality 90 JPEG.
+- Upload a tiny 200x150 screenshot → upscaled to 1600x1600 (still consistent
+  size, though a very small source image will look softer — garbage in,
+  garbage out, but at least it won't break the grid layout).
+- Upload a portrait or landscape photo → center-cropped to a square, same
+  as the others.
+- If processing fails for any reason (corrupt file, unsupported format),
+  it falls back to keeping the original upload rather than blocking the
+  seller from saving the product.
 
-## 2. Environment variables (optional)
+## Adjusting it
+Both knobs live at the top of `processImage.js`:
 
-Create `backend/.env`:
-
-```
-PORT=4000
-JWT_SECRET=replace-with-a-long-random-string
-```
-
-## 3. API reference
-
-| Method | Route | Auth | Purpose |
-|---|---|---|---|
-| GET | `/api/products` | – | List products. Query: `search, category, style, fabric, brand, minPrice, maxPrice, sort, page, limit` |
-| GET | `/api/products/meta` | – | Distinct `categories`, `styles`, `fabrics`, `brands` (for filter dropdowns) |
-| GET | `/api/products/:id` | – | Single product |
-| POST | `/api/products` | ✅ | Create product. `multipart/form-data` (field `image` for file upload) or JSON body |
-| PUT | `/api/products/:id` | ✅ | Update product |
-| PATCH | `/api/products/:id/stock` | ✅ | Body `{ "stock": 40 }` or `{ "delta": -3 }` |
-| DELETE | `/api/products/:id` | ✅ | Delete product |
-| POST | `/api/auth/signup` | – | `{ name, email, password }` → `{ token, user }` |
-| POST | `/api/auth/signin` | – | `{ email, password }` → `{ token, user }` |
-| GET | `/api/auth/me` | ✅ | Verify a token |
-| GET | `/api/stats` | – | Dashboard summary cards: totals, inventory value, low‑stock items |
-
-Send `Authorization: Bearer <token>` on protected routes (returned from
-`/api/auth/signup` or `/api/auth/signin`).
-
-### Product shape
-
-```json
-{
-  "id": "6FPGUunfWf",
-  "name": "AirFlex Runner",
-  "sku": "FN-SNK-001",
-  "price": 89,
-  "stock": 150,
-  "category": "Footwear",
-  "brand": "FabricNow",
-  "style": "Athletic",
-  "fabric": "Mesh",
-  "color": "Black/White",
-  "size": "M",
-  "description": "...",
-  "image": "https://...",
-  "images": ["https://..."],
-  "featured": false,
-  "createdAt": "2026-09-03T00:15:45.215Z",
-  "updatedAt": "2026-09-03T00:15:45.215Z"
-}
+```js
+const PRODUCT_IMAGE_SIZE = 1600; // output width/height in px
+const JPEG_QUALITY = 90;         // 1-100
 ```
 
-`style` and `fabric` are free‑text (populated from the dashboard's "Add
-Product" dropdowns) — the storefront reads them to show a Style/Fabric
-badge on each product card and detail page.
+If you'd rather pad instead of crop (e.g. to always show the whole
+garment even on odd aspect ratios) swap `fit: "cover"` for
+`fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 1 }` in the
+`.resize()` call — that letterboxes onto a white square instead of cropping.
 
-## 4. CORS
+## Catalog categories, styles and fabrics
 
-CORS is fully open (`app.use(cors())`) so both `http://localhost:3000`
-(storefront) and `http://localhost:5173` (dashboard, Vite default) can call
-it directly during development. Lock this down to specific origins before
-deploying to production.
+Starter category/style/fabric values are stored in MongoDB rather than hardcoded in the dashboard. Seed them once after deploying the updated backend:
 
-## 5. Wiring it up
+```bash
+npm run seed-taxonomies
+```
 
-- **Dashboard**: set the API base URL in
-  `style-dashboard/src/assets/js/api.js` (defaults to `http://localhost:4000/api`).
-- **Storefront**: set `NEXT_PUBLIC_API_URL=http://localhost:4000/api` in
-  `styles/.env.local` (defaults to the same value if unset).
+Admins can manage them at the dashboard's **Catalog Options** page. Active values automatically populate the Add Product dropdowns and storefront filters. Renaming a value updates existing products; hiding a value keeps it on old products but removes it from new-product selection.
+
+## Customer reviews
+
+Customers must be signed in and have a paid order containing the digital product before they can submit a review. Each customer can submit one review per product. Reviews are stored with the reviewer's user ID and are marked as verified purchases.
