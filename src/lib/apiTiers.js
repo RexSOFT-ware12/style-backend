@@ -3,17 +3,20 @@
 // one). These are for developers calling the Garment Tool programmatically
 // via an API key, through garment-service's /api/v1/garment/process route.
 //
-// Pricing (agreed 2026-09):
-//   API Starter    $49/mo   — 500 processed images/mo included
-//   API Growth     $149/mo  — 2,500 processed images/mo included
-//   API Enterprise custom  — negotiated volume, set by hand per customer
+// Pricing (repriced 2026-09 — positioned against traditional garment
+// photography/studio costs, not against our own compute cost):
+//   API Starter    $80/mo    — 3 processed images/mo included
+//   API Growth     $2,900/mo — 250 processed images/mo included
+//   API Enterprise custom, ~$9,000/mo reference point — negotiated volume
+//     (e.g. ~10,000 images/mo), set by hand per customer
 //     (see scripts/setup-api-billing.js and the "enterprise" notes below)
 //
 // Overage (same per-unit rate regardless of tier, once the included quota
 // for the current billing period is used up):
-//   $0.05 / image when the call included part segmentation (the OpenAI +
-//         HF-backed path — this is the expensive one)
-//   $0.02 / image for background-removal only (local model, cheap)
+//   $49.00 / image when the call included part segmentation (the OpenAI +
+//          HF-backed path — this is the expensive one)
+//   $20.00 / image for background-removal only (local model, cheap) —
+//          kept at the same ~40% ratio to the segmented rate as before
 //
 // Quota is a *soft* cap: going over it doesn't block the call, it just
 // starts getting billed as metered overage via Stripe. If you'd rather
@@ -25,16 +28,16 @@ const API_TIERS = {
   starter: {
     id: "starter",
     label: "API Starter",
-    monthlyPriceUsd: 49,
-    quota: 500,
+    monthlyPriceUsd: 80,
+    quota: 3,
     // Stripe Price id for the flat monthly base fee. Required in prod.
     basePriceEnvVar: "STRIPE_API_STARTER_PRICE_ID",
   },
   growth: {
     id: "growth",
     label: "API Growth",
-    monthlyPriceUsd: 149,
-    quota: 2500,
+    monthlyPriceUsd: 2900,
+    quota: 250,
     basePriceEnvVar: "STRIPE_API_GROWTH_PRICE_ID",
   },
   // No self-serve Checkout for this one — see /api/billing/api-checkout,
@@ -49,6 +52,11 @@ const API_TIERS = {
     monthlyPriceUsd: null,
     quota: null,
     basePriceEnvVar: null,
+    // Not billed automatically — every enterprise deal is negotiated and
+    // set by hand (see notes above). Kept purely as a starting reference
+    // point for sales conversations at ~10,000 images/mo.
+    referenceMonthlyPriceUsd: 9000,
+    referenceQuota: 10000,
   },
 };
 
@@ -57,13 +65,13 @@ const API_TIERS = {
 const OVERAGE = {
   segmented: {
     label: "segmented (background removal + part tracing)",
-    unitUsd: 0.05,
+    unitUsd: 49.0,
     priceEnvVar: "STRIPE_API_OVERAGE_SEGMENTED_PRICE_ID",
     meterEventName: "garment_image_segmented",
   },
   bgOnly: {
     label: "background-removal only",
-    unitUsd: 0.02,
+    unitUsd: 20.0,
     priceEnvVar: "STRIPE_API_OVERAGE_BGONLY_PRICE_ID",
     meterEventName: "garment_image_bg_removed",
   },
