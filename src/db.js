@@ -27,7 +27,8 @@ async function connectDB() {
     console.error("MongoDB connection error:", err.message);
   });
 
-  await mongoose.connect(uri);
+  const dbName = process.env.MONGODB_DB_NAME || "FabricNow";
+  await mongoose.connect(uri, { dbName });
   return mongoose.connection;
 }
 

@@ -2,9 +2,15 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/User");
-const { signToken, requireAuth } = require("../middleware/auth");
+const { signToken, requireAuth, isAdminStatus } = require("../middleware/auth");
+const { handleSignIn, handleSignUp } = require("../lib/notify");
 
 const router = express.Router();
+
+const BLOCKED_RESPONSE = {
+  error: "This account has been suspended. Please contact support.",
+  code: "ACCOUNT_BLOCKED",
+};
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Some historical user records (e.g. imported from a previous, non-Mongo
@@ -31,10 +37,12 @@ router.post("/signup", async (req, res, next) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, passwordHash });
+    const user = await User.create({ name, email, passwordHash, companyName: `${String(name).trim()} Workspace` });
+
+    handleSignUp(req, user); // welcome email + baseline device (non-blocking)
 
     const token = signToken({ id: user.id, name: user.name, email: user.email });
-    res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email }, isNewUser: true });
+    res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, companyName: user.companyName || "" }, isNewUser: true });
   } catch (err) {
     next(err);
   }
@@ -57,12 +65,16 @@ router.post("/signin", async (req, res, next) => {
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: "Invalid email or password" });
+    // Only tell the person they're blocked AFTER the password checked out,
+    // so this can't be used to probe which emails are blocked.
+    if (user.isBlocked) return res.status(403).json(BLOCKED_RESPONSE);
 
     // .lean() above returns a plain object, so build `id` from `_id`
     // ourselves rather than relying on Mongoose's `.id` virtual.
     const id = String(user._id);
+    handleSignIn(req, user, "Email & password"); // sign-in detection (non-blocking)
     const token = signToken({ id, name: user.name, email: user.email });
-    res.json({ token, user: { id, name: user.name, email: user.email }, isNewUser: false });
+    res.json({ token, user: { id, name: user.name, email: user.email, companyName: user.companyName || "" }, isNewUser: false });
   } catch (err) {
     next(err);
   }
@@ -159,14 +171,20 @@ router.post("/google", async (req, res, next) => {
       user = await User.create({
         name: payload.name || payload.given_name || email.split("@")[0],
         email,
+        companyName: `${payload.name || payload.given_name || email.split("@")[0]} Workspace`,
         googleId: payload.sub,
         avatarUrl: payload.picture,
       });
       isNewUser = true;
     }
 
+    if (user.isBlocked) return res.status(403).json(BLOCKED_RESPONSE);
+
+    if (isNewUser) handleSignUp(req, user, "Google");
+    else handleSignIn(req, user, "Google");
+
     const token = signToken({ id: user.id, name: user.name, email: user.email });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email }, isNewUser });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, companyName: user.companyName || "" }, isNewUser });
   } catch (err) {
     next(err);
   }
@@ -174,8 +192,21 @@ router.post("/google", async (req, res, next) => {
 
 // GET /api/auth/me — validates a token, used to keep sessions alive on both
 // the dashboard and the storefront (and to decide what "Log out" shows).
-router.get("/me", requireAuth, (req, res) => {
-  res.json({ user: { id: req.user.sub, name: req.user.name, email: req.user.email } });
+router.get("/me", requireAuth, (req, res, next) => {
+  (async () => {
+    const user = await User.findById(req.user.sub).select("name email companyName").lean();
+    res.json({
+      user: {
+        id: req.user.sub,
+        name: user?.name || req.user.name,
+        email: user?.email || req.user.email,
+        companyName: user?.companyName || "",
+        // Lets the dashboard show/hide the admin pages. The server still
+        // enforces this on every admin route — this is only for the UI.
+        isAdmin: isAdminStatus(req.userStatus || {}),
+      },
+    });
+  })().catch(next);
 });
 
 // PUT /api/auth/me — updates the signed-in user's display name (storefront
@@ -184,7 +215,7 @@ router.get("/me", requireAuth, (req, res) => {
 // flow rather than a plain field edit.
 router.put("/me", requireAuth, async (req, res, next) => {
   try {
-    const { name } = req.body || {};
+    const { name, companyName } = req.body || {};
     if (!name || !name.trim()) {
       return res.status(400).json({ error: "name is required" });
     }
@@ -193,9 +224,10 @@ router.put("/me", requireAuth, async (req, res, next) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     user.name = name.trim();
+    if (companyName !== undefined) user.companyName = String(companyName).trim().slice(0, 120);
     await user.save();
 
-    res.json({ user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, companyName: user.companyName || "" } });
   } catch (err) {
     next(err);
   }

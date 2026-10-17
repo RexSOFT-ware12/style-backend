@@ -47,6 +47,27 @@ const apiSubscriptionSchema = new Schema(
     currentPeriodStart: { type: Date, required: false },
     currentPeriodEnd: { type: Date, required: false },
 
+    // How this subscription is paid for. "stripe" = normal self-serve
+    // Checkout (renewals + period rollover arrive via webhook). "manual" =
+    // an admin marked it paid because the customer paid us directly; there
+    // is no Stripe subscription behind it, so the admin records each
+    // renewal from the dashboard (see routes/admin.js).
+    source: { type: String, enum: ["stripe", "manual"], default: "stripe" },
+    // Audit info for manual payments (last recorded payment).
+    manualPayment: {
+      amountUsd: { type: Number, required: false },
+      note: { type: String, required: false, maxlength: 500 },
+      recordedBy: { type: Schema.Types.ObjectId, ref: "User", required: false },
+      recordedAt: { type: Date, required: false },
+    },
+
+    // UNUSED CREDITS THAT CARRIED OVER from earlier periods (plus any
+    // credits an admin granted by hand). They never expire: at every
+    // renewal the fresh monthly `quota` is added on top of whatever is left
+    // here. Spendable allowance this period = quota + rolloverCredits —
+    // see lib/apiCredits.js, which is the only place that does this maths.
+    rolloverCredits: { type: Number, default: 0, min: 0 },
+
     // This-period usage counters, reset to 0 whenever a webhook shows the
     // period has rolled over. These are OUR bookkeeping for "has this key
     // used its included quota yet" — Stripe's own meters are the source of

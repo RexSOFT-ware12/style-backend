@@ -9,6 +9,17 @@ const { SITE_KNOWLEDGE } = require("./siteKnowledge");
 // generateContent REST endpoint is gemini-3.6-flash. Override via
 // GEMINI_MODEL in .env if your account is on a different one.
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+// Gemini rejected the request (billing hold, quota, bad key...). Log the real reason, show the user something calm.
+function geminiError(status, body) {
+  const e = new Error(`Gemini API error ${status}: ${String(body).slice(0, 300)}`);
+  e.status = status === 429 ? 429 : 503;
+  e.code = "AI_UNAVAILABLE";
+  e.publicMessage = status === 429
+    ? "The AI is busy right now. Please try again in a moment."
+    : "The AI service is temporarily unavailable. Please try again shortly.";
+  return e;
+}
+
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const SYSTEM_INSTRUCTION = `You are Fibo, the friendly in-house fabric & materials expert for FabricNow, an online fabric/textile store.
@@ -136,7 +147,7 @@ async function askSiteAssistant({ taxonomies = {}, sampleProducts = [], history 
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 300)}`);
+    throw geminiError(res.status, errText);
   }
 
   const data = await res.json();
@@ -248,7 +259,7 @@ async function askFibo({ product, candidates, history = [], message }) {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 300)}`);
+    throw geminiError(res.status, errText);
   }
 
   const data = await res.json();
@@ -340,7 +351,7 @@ async function askOnboardingPicks({ styles = [], experience = "", products = [] 
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 300)}`);
+    throw geminiError(res.status, errText);
   }
 
   const data = await res.json();
@@ -354,4 +365,35 @@ async function askOnboardingPicks({ styles = [], experience = "", products = [] 
   return parsed;
 }
 
-module.exports = { askFibo, askSiteAssistant, askOnboardingPicks };
+
+
+const TAILOR_TOOLS_SYSTEM_INSTRUCTION = `You are FabricNow Tailor Tools AI, an expert garment-construction assistant for tailors and fashion designers across Africa and internationally.
+Use the supplied project, measurement, fabric and board data. Never invent a measurement that is not supplied. Distinguish observed/inferred geometry from confirmed measurements. You may identify the garment type automatically from project context or the supplied piece list; the user should not have to choose it.
+Your advice must be practical: pattern pieces, seam placement, seam allowance, notches, darts, grainlines, stitch order, cutting layout, fit checks and construction sequence.
+Mathematical geometry must be explicit and internally consistent. Do not claim that a single photograph establishes true physical scale. When scale is uncertain, say what reference is needed.
+
+BOARD COORDINATES: 1 unit = 1 cm. Origin is the top-left corner, x increases to the right, y increases downward. The board is 140 wide and 180 high. Every operation you return must lie inside that area and use these units.
+Board "pieces" (if supplied) summarise each pattern piece in cm: name, cut quantity, onFold (cut on the fold, fold edge is the piece's left edge), width, height, allowance, notches, darts.
+Operation shapes you may return: line/seam/stitch/grainline use x1,y1,x2,y2 (seam may include allowance in cm); notch and annotation use x,y (annotation also text); dart uses x,y (the dart point) and x2,y2 (the dart base centre) plus w (dart width in cm); piece uses name, cut, allowance and points as an array of [x,y] pairs describing a closed polygon (3+ points). Only return operations you are confident are geometrically sensible.
+
+MODES: if the context has mode "stitch-plan", fill stitch_plan with a numbered sewing order (step, operation, notes) in sensible industry order: prepare/interface, darts, shoulder/side seams, then set-in parts, closures, hems, final press. If mode is "cutting-layout", focus on cutting_layout.notes: grain, nap/pattern matching, interfacing, cutting order, and fabric-saving advice, and keep fabric_width as supplied. In every mode keep the JSON shape below.
+Return ONLY JSON with this shape:
+{"garment_type":"string","confidence":0,"summary":"string","warnings":["string"],"suggestions":[{"title":"string","reason":"string","operations":[{"type":"line|seam|dart|notch|grainline|stitch|annotation|piece","x1":0,"y1":0,"x2":0,"y2":0,"x":0,"y":0,"w":0,"allowance":0,"text":"","name":"","cut":1,"points":[[0,0]]}]}],"measurements":{"checks":[],"missing":[]},"stitch_plan":[{"step":1,"operation":"string","notes":"string"}],"cutting_layout":{"fabric_width":0,"pieces":[],"notes":"string"}}`;
+
+async function askTailorTools(context = {}) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not configured on the server');
+  const body = {
+    system_instruction:{parts:[{text:TAILOR_TOOLS_SYSTEM_INSTRUCTION}]},
+    contents:[{role:'user',parts:[{text:`TAILOR TOOL CONTEXT:\n${JSON.stringify(context,null,2)}`}]}],
+    generationConfig:{maxOutputTokens:4000,responseMimeType:'application/json'},
+  };
+  const res=await fetch(`${GEMINI_URL}?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!res.ok){const errText=await res.text().catch(()=> '');throw geminiError(res.status,errText)}
+  const data=await res.json(); const raw=data?.candidates?.[0]?.content?.parts?.map(p=>p.text).join('')||'';
+  const cleaned=raw.trim().replace(/^```json\s*|^```\s*|```$/g,'').trim();
+  try { const parsed=JSON.parse(cleaned); if(typeof parsed!=='object'||!parsed)throw new Error('Invalid AI response'); return parsed; }
+  catch { return {garment_type:'',confidence:0,summary:raw||'No AI suggestion was returned.',warnings:['AI returned an unreadable response.'],suggestions:[],measurements:{checks:[],missing:[]},stitch_plan:[],cutting_layout:{fabric_width:0,pieces:[],notes:''}}; }
+}
+
+module.exports = { askFibo, askSiteAssistant, askOnboardingPicks, askTailorTools };

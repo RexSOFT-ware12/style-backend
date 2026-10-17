@@ -12,6 +12,7 @@ const userSchema = new Schema(
     // accounts simply omit this field).
     googleId: { type: String, required: false, unique: true, sparse: true },
     avatarUrl: { type: String, required: false },
+    companyName: { type: String, trim: true, default: "" },
 
     // --- Freemium / premium gating -----------------------------------
     // Garment Tool, Pose Tool, and SVG customization (on the Design
@@ -46,6 +47,23 @@ const userSchema = new Schema(
     // everyone pays "the" current price.
     premiumPriceId: { type: String, required: false },
     premiumUnitAmountCents: { type: Number, required: false },
+
+    // --- Admin dashboard controls ------------------------------------
+    // "admin" users can open the admin pages (users, API keys, manual API
+    // subscriptions). Emails listed in the ADMIN_EMAILS env var are also
+    // treated as admins even without this flag (see middleware/auth.js),
+    // which is how the very first admin gets bootstrapped.
+    role: { type: String, enum: ["user", "admin"], default: "user", index: true },
+    // Blocked users can't sign in, and any token they already hold stops
+    // working on the next request (requireAuth checks this).
+    isBlocked: { type: Boolean, default: false, index: true },
+    blockedAt: { type: Date, required: false },
+    blockedReason: { type: String, required: false, trim: true, maxlength: 300 },
+    blockedBy: { type: Schema.Types.ObjectId, ref: "User", required: false },
+
+    // Recognised devices/locations for sign-in alert emails (see
+    // lib/notify.js). Capped at 30 entries; hidden from normal queries.
+    signIns: { type: [Schema.Types.Mixed], default: undefined, select: false },
   },
   { timestamps: true }
 );

@@ -1,0 +1,3698 @@
+{
+  "name": "African Fashion Pinterest Inspiration Library",
+  "version": "2.0.0",
+  "description": "Curated Pinterest boards/pins (type=board|pin) plus ready-to-run Pinterest search seeds (type=search) for African fashion inspiration. Every item has a url that opens in Pinterest; search items also carry search_query for the backend /pinterest/search endpoint.",
+  "source": "Pinterest",
+  "schema": {
+    "type": "board | pin | search",
+    "gender": "female | male | unisex",
+    "category": "string",
+    "style": "string",
+    "region": "string",
+    "title": "string",
+    "source_account": "Pinterest username or null",
+    "url": "string",
+    "search_query": "string or null",
+    "tags": "string[]",
+    "origin": "original | expanded"
+  },
+  "counts": {
+    "total": 190,
+    "by_type": {
+      "board": 45,
+      "pin": 1,
+      "search": 144
+    },
+    "by_gender": {
+      "female": 104,
+      "male": 66,
+      "unisex": 20
+    }
+  },
+  "items": [
+    {
+      "id": 1,
+      "type": "board",
+      "gender": "female",
+      "category": "wedding",
+      "style": "African wedding dresses",
+      "region": "Africa",
+      "title": "African wedding dresses",
+      "source_account": "tebohomoja",
+      "url": "https://za.pinterest.com/tebohomoja/african-wedding-dresses/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 2,
+      "type": "board",
+      "gender": "female",
+      "category": "wedding",
+      "style": "African weddings",
+      "region": "Africa",
+      "title": "African weddings",
+      "source_account": "gofaonamaifala",
+      "url": "https://za.pinterest.com/gofaonamaifala/african-weddings/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "female",
+        "wedding",
+        "weddings"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 3,
+      "type": "board",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Ghanaian wedding fashion",
+      "region": "Ghana",
+      "title": "Ghanaian wedding fashion",
+      "source_account": "jsweston6953",
+      "url": "https://uk.pinterest.com/jsweston6953/ghanaian-wedding/",
+      "search_query": null,
+      "tags": [
+        "fashion",
+        "female",
+        "ghanaian",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 4,
+      "type": "board",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Ghanaian wedding fashion",
+      "region": "Ghana",
+      "title": "Ghanaian wedding fashion",
+      "source_account": "rjay1237607",
+      "url": "https://uk.pinterest.com/rjay1237607/ghanaian-wedding/",
+      "search_query": null,
+      "tags": [
+        "fashion",
+        "female",
+        "ghanaian",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 5,
+      "type": "board",
+      "gender": "female",
+      "category": "engagement",
+      "style": "Kente engagement dresses",
+      "region": "Ghana",
+      "title": "Kente engagement dresses",
+      "source_account": "pinksvivabridal",
+      "url": "https://www.pinterest.com/pinksvivabridal/kente-dress/",
+      "search_query": null,
+      "tags": [
+        "dresses",
+        "engagement",
+        "female",
+        "kente"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 6,
+      "type": "board",
+      "gender": "female",
+      "category": "traditional",
+      "style": "African traditional dresses",
+      "region": "Africa",
+      "title": "African traditional dresses",
+      "source_account": "kegomoditswec",
+      "url": "https://za.pinterest.com/kegomoditswec/african-traditional-clothing/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "traditional"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 7,
+      "type": "board",
+      "gender": "female",
+      "category": "traditional",
+      "style": "African traditional dresses",
+      "region": "Africa",
+      "title": "African traditional dresses",
+      "source_account": "nkosemntusiphokazi",
+      "url": "https://za.pinterest.com/nkosemntusiphokazi/african-traditional-dresses/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "traditional"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 8,
+      "type": "board",
+      "gender": "female",
+      "category": "traditional",
+      "style": "African traditional wear",
+      "region": "Africa",
+      "title": "African traditional wear",
+      "source_account": "del2405",
+      "url": "https://za.pinterest.com/del2405/african-traditional-wear/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "female",
+        "traditional",
+        "wear"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 9,
+      "type": "board",
+      "gender": "female",
+      "category": "traditional",
+      "style": "African traditional fashion",
+      "region": "Africa",
+      "title": "African traditional fashion",
+      "source_account": "gcinanin",
+      "url": "https://za.pinterest.com/gcinanin/african-fashion-tradition/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "fashion",
+        "female",
+        "traditional"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 10,
+      "type": "board",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Ankara dresses",
+      "region": "Africa",
+      "title": "Ankara dresses",
+      "source_account": "sunshine_lis",
+      "url": "https://www.pinterest.com/sunshine_lis/ankara-dresses/",
+      "search_query": null,
+      "tags": [
+        "ankara",
+        "dresses",
+        "female"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 11,
+      "type": "board",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Ankara dresses",
+      "region": "Africa",
+      "title": "Ankara dresses",
+      "source_account": "mipimipi",
+      "url": "https://www.pinterest.com/mipimipi/ankara-dresses/",
+      "search_query": null,
+      "tags": [
+        "ankara",
+        "dresses",
+        "female"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 12,
+      "type": "board",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Women's Ankara dresses",
+      "region": "Africa",
+      "title": "Women's Ankara dresses",
+      "source_account": "kadengemoyo",
+      "url": "https://za.pinterest.com/kadengemoyo/womens-ankara-dresses/",
+      "search_query": null,
+      "tags": [
+        "ankara",
+        "dresses",
+        "female",
+        "women"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 13,
+      "type": "board",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Traditional Ankara dresses",
+      "region": "Africa",
+      "title": "Traditional Ankara dresses",
+      "source_account": "angelantow80",
+      "url": "https://uk.pinterest.com/angelantow80/traditional-ankara-dresses/",
+      "search_query": null,
+      "tags": [
+        "ankara",
+        "dresses",
+        "female",
+        "traditional"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 14,
+      "type": "board",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Ankara styles",
+      "region": "Africa",
+      "title": "Ankara styles",
+      "source_account": "kemiomotoso40",
+      "url": "https://uk.pinterest.com/kemiomotoso40/ankara-styles/",
+      "search_query": null,
+      "tags": [
+        "ankara",
+        "female",
+        "styles"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 15,
+      "type": "board",
+      "gender": "female",
+      "category": "kente",
+      "style": "Kente and Ankara fashion",
+      "region": "Ghana/Africa",
+      "title": "Kente and Ankara fashion",
+      "source_account": "nzalambie",
+      "url": "https://www.pinterest.com/nzalambie/ankara-kente/",
+      "search_query": null,
+      "tags": [
+        "ankara",
+        "fashion",
+        "female",
+        "kente"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 16,
+      "type": "board",
+      "gender": "female",
+      "category": "kitenge",
+      "style": "Kitenge and Ankara dresses",
+      "region": "East Africa/Africa",
+      "title": "Kitenge and Ankara dresses",
+      "source_account": "nyaraiagatha",
+      "url": "https://uk.pinterest.com/nyaraiagatha/kitengeankara-dresses/",
+      "search_query": null,
+      "tags": [
+        "ankara",
+        "dresses",
+        "female",
+        "kitenge"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 17,
+      "type": "board",
+      "gender": "female",
+      "category": "party",
+      "style": "African party dresses",
+      "region": "Africa",
+      "title": "African party dresses",
+      "source_account": "nfm__",
+      "url": "https://uk.pinterest.com/nfm__/african-party-dresses/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "party"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 18,
+      "type": "board",
+      "gender": "female",
+      "category": "party",
+      "style": "African party dresses",
+      "region": "Africa",
+      "title": "African party dresses",
+      "source_account": "simphiwelushaba",
+      "url": "https://za.pinterest.com/simphiwelushaba/african-party-dresses/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "party"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 19,
+      "type": "board",
+      "gender": "female",
+      "category": "party",
+      "style": "African party dresses",
+      "region": "Africa",
+      "title": "African party dresses",
+      "source_account": "susanchipasula",
+      "url": "https://za.pinterest.com/susanchipasula/african-party-dresses/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "party"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 20,
+      "type": "board",
+      "gender": "female",
+      "category": "lace",
+      "style": "African lace dresses",
+      "region": "Africa",
+      "title": "African lace dresses",
+      "source_account": "khumalozoe12",
+      "url": "https://za.pinterest.com/khumalozoe12/african-party-dresses/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "lace"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 21,
+      "type": "board",
+      "gender": "female",
+      "category": "general",
+      "style": "African dresses for women",
+      "region": "Africa",
+      "title": "African dresses for women",
+      "source_account": "jericoncube",
+      "url": "https://za.pinterest.com/jericoncube/african-dresses-for-women-ankara/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "general",
+        "women"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 22,
+      "type": "board",
+      "gender": "female",
+      "category": "general",
+      "style": "African dress designs",
+      "region": "Africa",
+      "title": "African dress designs",
+      "source_account": "afrobbeangiant",
+      "url": "https://nl.pinterest.com/afrobbeangiant/dresses-ankara-kente-etc/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "designs",
+        "dress",
+        "female",
+        "general"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 23,
+      "type": "board",
+      "gender": "male",
+      "category": "wedding",
+      "style": "African wedding attire for men",
+      "region": "Africa",
+      "title": "African wedding attire for men",
+      "source_account": "gmparutsa",
+      "url": "https://uk.pinterest.com/gmparutsa/african-wedding-attire-men/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "attire",
+        "male",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 24,
+      "type": "board",
+      "gender": "male",
+      "category": "wedding",
+      "style": "Men's African wedding suits",
+      "region": "Africa",
+      "title": "Men's African wedding suits",
+      "source_account": "dorothy6692",
+      "url": "https://uk.pinterest.com/dorothy6692/mens-african-wedding-su/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "male",
+        "suits",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 25,
+      "type": "board",
+      "gender": "male",
+      "category": "wedding",
+      "style": "African men's wedding outfits",
+      "region": "Africa",
+      "title": "African men's wedding outfits",
+      "source_account": "caspervusumuzi",
+      "url": "https://za.pinterest.com/caspervusumuzi/wedding-outfit-men/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "male",
+        "outfits",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 26,
+      "type": "board",
+      "gender": "male",
+      "category": "wedding",
+      "style": "African wedding wear",
+      "region": "Africa",
+      "title": "African wedding wear",
+      "source_account": "chilleigh",
+      "url": "https://za.pinterest.com/chilleigh/wedding-wear/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "male",
+        "wear",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 27,
+      "type": "board",
+      "gender": "male",
+      "category": "wedding",
+      "style": "Traditional wedding attire",
+      "region": "Africa",
+      "title": "Traditional wedding attire",
+      "source_account": "tdgrace1986",
+      "url": "https://za.pinterest.com/tdgrace1986/traditional-wedding-attire/",
+      "search_query": null,
+      "tags": [
+        "attire",
+        "male",
+        "traditional",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 28,
+      "type": "board",
+      "gender": "male",
+      "category": "wedding",
+      "style": "Wedding attire for men",
+      "region": "Africa",
+      "title": "Wedding attire for men",
+      "source_account": "phadishi",
+      "url": "https://za.pinterest.com/phadishi/wedding-attire/",
+      "search_query": null,
+      "tags": [
+        "attire",
+        "male",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 29,
+      "type": "board",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Agbada",
+      "region": "West Africa",
+      "title": "Agbada",
+      "source_account": "jakeaddai4",
+      "url": "https://www.pinterest.com/jakeaddai4/trending-agbada/",
+      "search_query": null,
+      "tags": [
+        "agbada",
+        "male",
+        "traditional"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 30,
+      "type": "board",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Agbada for men",
+      "region": "West Africa",
+      "title": "Agbada for men",
+      "source_account": "jilxcel",
+      "url": "https://au.pinterest.com/jilxcel/agbada-for-men/",
+      "search_query": null,
+      "tags": [
+        "agbada",
+        "male",
+        "traditional"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 31,
+      "type": "board",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Men's Agbada",
+      "region": "West Africa",
+      "title": "Men's Agbada",
+      "source_account": "styles4moi",
+      "url": "https://uk.pinterest.com/styles4moi/mens-agbada/",
+      "search_query": null,
+      "tags": [
+        "agbada",
+        "male",
+        "traditional"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 32,
+      "type": "board",
+      "gender": "male",
+      "category": "kaftan",
+      "style": "Men's African Kaftan",
+      "region": "Africa",
+      "title": "Men's African Kaftan",
+      "source_account": "adjeibarth224",
+      "url": "https://www.pinterest.com/adjeibarth224/kaftan-men/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "kaftan",
+        "male"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 33,
+      "type": "board",
+      "gender": "male",
+      "category": "kaftan",
+      "style": "African men's Kaftan",
+      "region": "Africa",
+      "title": "African men's Kaftan",
+      "source_account": "abayomishowunmi",
+      "url": "https://au.pinterest.com/abayomishowunmi/kaftan/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "kaftan",
+        "male"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 34,
+      "type": "board",
+      "gender": "male",
+      "category": "kaftan",
+      "style": "Kaftan for men",
+      "region": "Africa",
+      "title": "Kaftan for men",
+      "source_account": "kwameduncan",
+      "url": "https://nl.pinterest.com/kwameduncan/kaftan-for-men/",
+      "search_query": null,
+      "tags": [
+        "kaftan",
+        "male"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 35,
+      "type": "board",
+      "gender": "male",
+      "category": "kaftan",
+      "style": "African men's Kaftan",
+      "region": "Africa",
+      "title": "African men's Kaftan",
+      "source_account": "kanyi1312",
+      "url": "https://au.pinterest.com/kanyi1312/kaftan/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "kaftan",
+        "male"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 36,
+      "type": "board",
+      "gender": "male",
+      "category": "kente",
+      "style": "Kente men's fashion",
+      "region": "Ghana/Africa",
+      "title": "Kente men's fashion",
+      "source_account": "geno1265",
+      "url": "https://za.pinterest.com/geno1265/kente-styles/",
+      "search_query": null,
+      "tags": [
+        "fashion",
+        "kente",
+        "male"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 37,
+      "type": "pin",
+      "gender": "male",
+      "category": "kente",
+      "style": "Kente inspired two-piece Kaftan",
+      "region": "Ghana",
+      "title": "Kente inspired two-piece Kaftan",
+      "source_account": null,
+      "url": "https://uk.pinterest.com/pin/612911830559015033/",
+      "search_query": null,
+      "tags": [
+        "inspired",
+        "kaftan",
+        "kente",
+        "male",
+        "piece"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 38,
+      "type": "board",
+      "gender": "male",
+      "category": "dashiki",
+      "style": "Agbada Dashiki Kaftan",
+      "region": "West Africa",
+      "title": "Agbada Dashiki Kaftan",
+      "source_account": "keimi1606",
+      "url": "https://uk.pinterest.com/keimi1606/agbada-dashiki-and-kaftan-style/",
+      "search_query": null,
+      "tags": [
+        "agbada",
+        "dashiki",
+        "kaftan",
+        "male"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 39,
+      "type": "board",
+      "gender": "male",
+      "category": "traditional",
+      "style": "African traditional men's wedding outfits",
+      "region": "Africa",
+      "title": "African traditional men's wedding outfits",
+      "source_account": "hlongwagcaba",
+      "url": "https://za.pinterest.com/hlongwagcaba/african-traditional-mens-wedding-outfits/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "male",
+        "outfits",
+        "traditional",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 40,
+      "type": "board",
+      "gender": "male",
+      "category": "general",
+      "style": "African men's fashion",
+      "region": "Africa",
+      "title": "African men's fashion",
+      "source_account": "junmaib",
+      "url": "https://uk.pinterest.com/junmaib/for-men/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "fashion",
+        "general",
+        "male"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 41,
+      "type": "board",
+      "gender": "male",
+      "category": "general",
+      "style": "African men's clothing",
+      "region": "Africa",
+      "title": "African men's clothing",
+      "source_account": "mireillendzomo",
+      "url": "https://fr.pinterest.com/mireillendzomo/agbada-pour-homme/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "clothing",
+        "general",
+        "male"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 42,
+      "type": "board",
+      "gender": "male",
+      "category": "wedding",
+      "style": "Men's African wedding wear",
+      "region": "Africa",
+      "title": "Men's African wedding wear",
+      "source_account": "kgothatsomokoke25",
+      "url": "https://za.pinterest.com/kgothatsomokoke25/wedding/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "male",
+        "wear",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 43,
+      "type": "board",
+      "gender": "male",
+      "category": "wedding",
+      "style": "Men's wedding wear",
+      "region": "Africa",
+      "title": "Men's wedding wear",
+      "source_account": "mkhabelasim",
+      "url": "https://za.pinterest.com/mkhabelasim/mens-wear-wedding/",
+      "search_query": null,
+      "tags": [
+        "male",
+        "wear",
+        "wedding"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 44,
+      "type": "board",
+      "gender": "unisex",
+      "category": "traditional",
+      "style": "African traditional attire",
+      "region": "Africa",
+      "title": "African traditional attire",
+      "source_account": "mndawe",
+      "url": "https://za.pinterest.com/mndawe/africa-traditional-attires/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "attire",
+        "traditional",
+        "unisex"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 45,
+      "type": "board",
+      "gender": "unisex",
+      "category": "traditional",
+      "style": "African traditional fashion",
+      "region": "Africa",
+      "title": "African traditional fashion",
+      "source_account": "fezekandongeni",
+      "url": "https://za.pinterest.com/fezekandongeni/african-traditional-clothing/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "fashion",
+        "traditional",
+        "unisex"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 46,
+      "type": "board",
+      "gender": "unisex",
+      "category": "traditional",
+      "style": "African traditional wear",
+      "region": "Africa",
+      "title": "African traditional wear",
+      "source_account": "lindiwemsiza",
+      "url": "https://za.pinterest.com/lindiwemsiza/african-traditional-wear/",
+      "search_query": null,
+      "tags": [
+        "african",
+        "traditional",
+        "unisex",
+        "wear"
+      ],
+      "origin": "original"
+    },
+    {
+      "id": 47,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Ankara gown styles",
+      "region": "West Africa",
+      "title": "Ankara gown styles",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+gown+styles",
+      "search_query": "ankara gown styles",
+      "tags": [
+        "ankara",
+        "female",
+        "gown",
+        "styles"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 48,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Ankara peplum tops",
+      "region": "West Africa",
+      "title": "Ankara peplum tops",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+peplum+tops",
+      "search_query": "ankara peplum tops",
+      "tags": [
+        "ankara",
+        "female",
+        "peplum",
+        "tops"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 49,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Ankara jumpsuits",
+      "region": "West Africa",
+      "title": "Ankara jumpsuits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+jumpsuits",
+      "search_query": "ankara jumpsuits",
+      "tags": [
+        "ankara",
+        "female",
+        "jumpsuits"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 50,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Ankara skirt and blouse",
+      "region": "West Africa",
+      "title": "Ankara skirt and blouse",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+skirt+and+blouse",
+      "search_query": "ankara skirt and blouse",
+      "tags": [
+        "ankara",
+        "blouse",
+        "female",
+        "skirt"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 51,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Ankara maxi dresses",
+      "region": "West Africa",
+      "title": "Ankara maxi dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+maxi+dresses",
+      "search_query": "ankara maxi dresses",
+      "tags": [
+        "ankara",
+        "dresses",
+        "female",
+        "maxi"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 52,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "Ankara corset dress",
+      "region": "West Africa",
+      "title": "Ankara corset dress",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+corset+dress",
+      "search_query": "ankara corset dress",
+      "tags": [
+        "ankara",
+        "corset",
+        "dress",
+        "female"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 53,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Ankara bridesmaid dresses",
+      "region": "West Africa",
+      "title": "Ankara bridesmaid dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+bridesmaid+dresses",
+      "search_query": "ankara bridesmaid dresses",
+      "tags": [
+        "ankara",
+        "bridesmaid",
+        "dresses",
+        "female",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 54,
+      "type": "search",
+      "gender": "female",
+      "category": "aso-ebi",
+      "style": "Aso ebi styles",
+      "region": "Nigeria",
+      "title": "Aso ebi styles",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=aso+ebi+styles",
+      "search_query": "aso ebi styles",
+      "tags": [
+        "aso-ebi",
+        "female",
+        "styles"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 55,
+      "type": "search",
+      "gender": "female",
+      "category": "aso-ebi",
+      "style": "Aso ebi lace styles",
+      "region": "Nigeria",
+      "title": "Aso ebi lace styles",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=aso+ebi+lace+styles",
+      "search_query": "aso ebi lace styles",
+      "tags": [
+        "aso-ebi",
+        "female",
+        "lace",
+        "styles"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 56,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Nigerian traditional wedding attire",
+      "region": "Nigeria",
+      "title": "Nigerian traditional wedding attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=nigerian+traditional+wedding+attire",
+      "search_query": "nigerian traditional wedding attire",
+      "tags": [
+        "attire",
+        "female",
+        "nigerian",
+        "traditional",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 57,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Igbo bride traditional attire",
+      "region": "Nigeria",
+      "title": "Igbo bride traditional attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=igbo+bride+traditional+attire",
+      "search_query": "igbo bride traditional attire",
+      "tags": [
+        "attire",
+        "bride",
+        "female",
+        "igbo",
+        "traditional",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 58,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Yoruba bride aso oke",
+      "region": "Nigeria",
+      "title": "Yoruba bride aso oke",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=yoruba+bride+aso+oke",
+      "search_query": "yoruba bride aso oke",
+      "tags": [
+        "bride",
+        "female",
+        "wedding",
+        "yoruba"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 59,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Aso oke styles",
+      "region": "Nigeria",
+      "title": "Aso oke styles",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=aso+oke+styles",
+      "search_query": "aso oke styles",
+      "tags": [
+        "female",
+        "styles",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 60,
+      "type": "search",
+      "gender": "female",
+      "category": "accessories",
+      "style": "Gele head tie styles",
+      "region": "Nigeria",
+      "title": "Gele head tie styles",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=gele+head+tie+styles",
+      "search_query": "gele head tie styles",
+      "tags": [
+        "accessories",
+        "female",
+        "gele",
+        "head",
+        "styles"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 61,
+      "type": "search",
+      "gender": "female",
+      "category": "kente",
+      "style": "Kente dress designs",
+      "region": "Ghana",
+      "title": "Kente dress designs",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kente+dress+designs",
+      "search_query": "kente dress designs",
+      "tags": [
+        "designs",
+        "dress",
+        "female",
+        "kente"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 62,
+      "type": "search",
+      "gender": "female",
+      "category": "kente",
+      "style": "Kente kaba and slit",
+      "region": "Ghana",
+      "title": "Kente kaba and slit",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kente+kaba+and+slit",
+      "search_query": "kente kaba and slit",
+      "tags": [
+        "female",
+        "kaba",
+        "kente",
+        "slit"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 63,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Ghana kaba and slit styles",
+      "region": "Ghana",
+      "title": "Ghana kaba and slit styles",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ghana+kaba+and+slit+styles",
+      "search_query": "ghana kaba and slit styles",
+      "tags": [
+        "female",
+        "ghana",
+        "kaba",
+        "slit",
+        "styles",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 64,
+      "type": "search",
+      "gender": "female",
+      "category": "engagement",
+      "style": "Ghana engagement outfits",
+      "region": "Ghana",
+      "title": "Ghana engagement outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ghana+engagement+outfits",
+      "search_query": "ghana engagement outfits",
+      "tags": [
+        "engagement",
+        "female",
+        "ghana",
+        "outfits"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 65,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Ghana traditional wedding kente bride",
+      "region": "Ghana",
+      "title": "Ghana traditional wedding kente bride",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ghana+traditional+wedding+kente+bride",
+      "search_query": "ghana traditional wedding kente bride",
+      "tags": [
+        "bride",
+        "female",
+        "ghana",
+        "kente",
+        "traditional",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 66,
+      "type": "search",
+      "gender": "female",
+      "category": "kente",
+      "style": "Kente bridal gown",
+      "region": "Ghana",
+      "title": "Kente bridal gown",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kente+bridal+gown",
+      "search_query": "kente bridal gown",
+      "tags": [
+        "bridal",
+        "female",
+        "gown",
+        "kente"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 67,
+      "type": "search",
+      "gender": "female",
+      "category": "kente",
+      "style": "Kente skirt and top",
+      "region": "Ghana",
+      "title": "Kente skirt and top",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kente+skirt+and+top",
+      "search_query": "kente skirt and top",
+      "tags": [
+        "female",
+        "kente",
+        "skirt"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 68,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Ghanaian bridesmaid kente",
+      "region": "Ghana",
+      "title": "Ghanaian bridesmaid kente",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ghanaian+bridesmaid+kente",
+      "search_query": "ghanaian bridesmaid kente",
+      "tags": [
+        "bridesmaid",
+        "female",
+        "ghanaian",
+        "kente",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 69,
+      "type": "search",
+      "gender": "female",
+      "category": "church",
+      "style": "Ghana Sunday church fashion",
+      "region": "Ghana",
+      "title": "Ghana Sunday church fashion",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ghana+sunday+church+fashion",
+      "search_query": "ghana sunday church fashion",
+      "tags": [
+        "church",
+        "fashion",
+        "female",
+        "ghana",
+        "sunday"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 70,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Ghana smock women",
+      "region": "Ghana",
+      "title": "Ghana smock women",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ghana+smock+women",
+      "search_query": "ghana smock women",
+      "tags": [
+        "female",
+        "ghana",
+        "smock",
+        "traditional",
+        "women"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 71,
+      "type": "search",
+      "gender": "female",
+      "category": "kitenge",
+      "style": "Kitenge dress designs",
+      "region": "East Africa",
+      "title": "Kitenge dress designs",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kitenge+dress+designs",
+      "search_query": "kitenge dress designs",
+      "tags": [
+        "designs",
+        "dress",
+        "female",
+        "kitenge"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 72,
+      "type": "search",
+      "gender": "female",
+      "category": "kitenge",
+      "style": "Kitenge maxi dresses",
+      "region": "East Africa",
+      "title": "Kitenge maxi dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kitenge+maxi+dresses",
+      "search_query": "kitenge maxi dresses",
+      "tags": [
+        "dresses",
+        "female",
+        "kitenge",
+        "maxi"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 73,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Kitenge bridesmaid dresses",
+      "region": "East Africa",
+      "title": "Kitenge bridesmaid dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kitenge+bridesmaid+dresses",
+      "search_query": "kitenge bridesmaid dresses",
+      "tags": [
+        "bridesmaid",
+        "dresses",
+        "female",
+        "kitenge",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 74,
+      "type": "search",
+      "gender": "female",
+      "category": "kanga",
+      "style": "Kanga fashion",
+      "region": "East Africa",
+      "title": "Kanga fashion",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kanga+fashion",
+      "search_query": "kanga fashion",
+      "tags": [
+        "fashion",
+        "female",
+        "kanga"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 75,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Maasai shuka fashion",
+      "region": "Kenya",
+      "title": "Maasai shuka fashion",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=maasai+shuka+fashion",
+      "search_query": "maasai shuka fashion",
+      "tags": [
+        "fashion",
+        "female",
+        "maasai",
+        "shuka",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 76,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Ugandan gomesi",
+      "region": "Uganda",
+      "title": "Ugandan gomesi",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ugandan+gomesi",
+      "search_query": "ugandan gomesi",
+      "tags": [
+        "female",
+        "gomesi",
+        "traditional",
+        "ugandan"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 77,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Rwandan umushanana",
+      "region": "Rwanda",
+      "title": "Rwandan umushanana",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=rwandan+umushanana",
+      "search_query": "rwandan umushanana",
+      "tags": [
+        "female",
+        "rwandan",
+        "traditional",
+        "umushanana"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 78,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Ethiopian habesha kemis",
+      "region": "Ethiopia",
+      "title": "Ethiopian habesha kemis",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ethiopian+habesha+kemis",
+      "search_query": "ethiopian habesha kemis",
+      "tags": [
+        "ethiopian",
+        "female",
+        "habesha",
+        "kemis",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 79,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Habesha wedding dress",
+      "region": "Ethiopia",
+      "title": "Habesha wedding dress",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=habesha+wedding+dress",
+      "search_query": "habesha wedding dress",
+      "tags": [
+        "dress",
+        "female",
+        "habesha",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 80,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Swahili kanzu and kikoi fashion",
+      "region": "Tanzania",
+      "title": "Swahili kanzu and kikoi fashion",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=swahili+kanzu+and+kikoi+fashion",
+      "search_query": "swahili kanzu and kikoi fashion",
+      "tags": [
+        "fashion",
+        "female",
+        "kanzu",
+        "kikoi",
+        "swahili",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 81,
+      "type": "search",
+      "gender": "female",
+      "category": "shweshwe",
+      "style": "Shweshwe dresses",
+      "region": "South Africa",
+      "title": "Shweshwe dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=shweshwe+dresses",
+      "search_query": "shweshwe dresses",
+      "tags": [
+        "dresses",
+        "female",
+        "shweshwe"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 82,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Xhosa traditional attire women",
+      "region": "South Africa",
+      "title": "Xhosa traditional attire women",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=xhosa+traditional+attire+women",
+      "search_query": "xhosa traditional attire women",
+      "tags": [
+        "attire",
+        "female",
+        "traditional",
+        "women",
+        "xhosa"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 83,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Zulu traditional attire women",
+      "region": "South Africa",
+      "title": "Zulu traditional attire women",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=zulu+traditional+attire+women",
+      "search_query": "zulu traditional attire women",
+      "tags": [
+        "attire",
+        "female",
+        "traditional",
+        "women",
+        "zulu"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 84,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Tswana traditional dress",
+      "region": "Botswana",
+      "title": "Tswana traditional dress",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=tswana+traditional+dress",
+      "search_query": "tswana traditional dress",
+      "tags": [
+        "dress",
+        "female",
+        "traditional",
+        "tswana"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 85,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Ndebele traditional attire",
+      "region": "South Africa",
+      "title": "Ndebele traditional attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ndebele+traditional+attire",
+      "search_query": "ndebele traditional attire",
+      "tags": [
+        "attire",
+        "female",
+        "ndebele",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 86,
+      "type": "search",
+      "gender": "female",
+      "category": "shweshwe",
+      "style": "Sotho seshoeshoe dresses",
+      "region": "Lesotho",
+      "title": "Sotho seshoeshoe dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=sotho+seshoeshoe+dresses",
+      "search_query": "sotho seshoeshoe dresses",
+      "tags": [
+        "dresses",
+        "female",
+        "seshoeshoe",
+        "shweshwe",
+        "sotho"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 87,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Venda traditional attire",
+      "region": "South Africa",
+      "title": "Venda traditional attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=venda+traditional+attire",
+      "search_query": "venda traditional attire",
+      "tags": [
+        "attire",
+        "female",
+        "traditional",
+        "venda"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 88,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Tsonga xibelani attire",
+      "region": "South Africa",
+      "title": "Tsonga xibelani attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=tsonga+xibelani+attire",
+      "search_query": "tsonga xibelani attire",
+      "tags": [
+        "attire",
+        "female",
+        "traditional",
+        "tsonga",
+        "xibelani"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 89,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "South African lobola outfits",
+      "region": "South Africa",
+      "title": "South African lobola outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=south+african+lobola+outfits",
+      "search_query": "south african lobola outfits",
+      "tags": [
+        "african",
+        "female",
+        "lobola",
+        "outfits",
+        "south",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 90,
+      "type": "search",
+      "gender": "female",
+      "category": "boubou",
+      "style": "Senegalese boubou women",
+      "region": "Senegal",
+      "title": "Senegalese boubou women",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=senegalese+boubou+women",
+      "search_query": "senegalese boubou women",
+      "tags": [
+        "boubou",
+        "female",
+        "senegalese",
+        "women"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 91,
+      "type": "search",
+      "gender": "female",
+      "category": "boubou",
+      "style": "Grand boubou styles",
+      "region": "West Africa",
+      "title": "Grand boubou styles",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=grand+boubou+styles",
+      "search_query": "grand boubou styles",
+      "tags": [
+        "boubou",
+        "female",
+        "grand",
+        "styles"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 92,
+      "type": "search",
+      "gender": "female",
+      "category": "bogolan",
+      "style": "Malian bogolan mud cloth fashion",
+      "region": "Mali",
+      "title": "Malian bogolan mud cloth fashion",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=malian+bogolan+mud+cloth+fashion",
+      "search_query": "malian bogolan mud cloth fashion",
+      "tags": [
+        "bogolan",
+        "cloth",
+        "fashion",
+        "female",
+        "malian"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 93,
+      "type": "search",
+      "gender": "female",
+      "category": "adire",
+      "style": "Adire fashion",
+      "region": "Nigeria",
+      "title": "Adire fashion",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=adire+fashion",
+      "search_query": "adire fashion",
+      "tags": [
+        "adire",
+        "fashion",
+        "female"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 94,
+      "type": "search",
+      "gender": "female",
+      "category": "batik",
+      "style": "African batik dresses",
+      "region": "West Africa",
+      "title": "African batik dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+batik+dresses",
+      "search_query": "african batik dresses",
+      "tags": [
+        "african",
+        "batik",
+        "dresses",
+        "female"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 95,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Cameroon kaba ngondo",
+      "region": "Cameroon",
+      "title": "Cameroon kaba ngondo",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=cameroon+kaba+ngondo",
+      "search_query": "cameroon kaba ngondo",
+      "tags": [
+        "cameroon",
+        "female",
+        "kaba",
+        "ngondo",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 96,
+      "type": "search",
+      "gender": "female",
+      "category": "wax-print",
+      "style": "Congolese wax print dresses",
+      "region": "Central Africa",
+      "title": "Congolese wax print dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=congolese+wax+print+dresses",
+      "search_query": "congolese wax print dresses",
+      "tags": [
+        "congolese",
+        "dresses",
+        "female",
+        "print",
+        "wax-print"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 97,
+      "type": "search",
+      "gender": "female",
+      "category": "chitenge",
+      "style": "Zambian chitenge dresses",
+      "region": "Zambia",
+      "title": "Zambian chitenge dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=zambian+chitenge+dresses",
+      "search_query": "zambian chitenge dresses",
+      "tags": [
+        "chitenge",
+        "dresses",
+        "female",
+        "zambian"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 98,
+      "type": "search",
+      "gender": "female",
+      "category": "chitenge",
+      "style": "Malawian chitenge fashion",
+      "region": "Malawi",
+      "title": "Malawian chitenge fashion",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=malawian+chitenge+fashion",
+      "search_query": "malawian chitenge fashion",
+      "tags": [
+        "chitenge",
+        "fashion",
+        "female",
+        "malawian"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 99,
+      "type": "search",
+      "gender": "female",
+      "category": "kaftan",
+      "style": "Moroccan kaftan women",
+      "region": "North Africa",
+      "title": "Moroccan kaftan women",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=moroccan+kaftan+women",
+      "search_query": "moroccan kaftan women",
+      "tags": [
+        "female",
+        "kaftan",
+        "moroccan",
+        "women"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 100,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "Moroccan takchita",
+      "region": "Morocco",
+      "title": "Moroccan takchita",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=moroccan+takchita",
+      "search_query": "moroccan takchita",
+      "tags": [
+        "female",
+        "moroccan",
+        "takchita",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 101,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Egyptian galabeya fashion",
+      "region": "Egypt",
+      "title": "Egyptian galabeya fashion",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=egyptian+galabeya+fashion",
+      "search_query": "egyptian galabeya fashion",
+      "tags": [
+        "egyptian",
+        "fashion",
+        "female",
+        "galabeya",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 102,
+      "type": "search",
+      "gender": "female",
+      "category": "traditional",
+      "style": "Tunisian traditional dress",
+      "region": "Tunisia",
+      "title": "Tunisian traditional dress",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=tunisian+traditional+dress",
+      "search_query": "tunisian traditional dress",
+      "tags": [
+        "dress",
+        "female",
+        "traditional",
+        "tunisian"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 103,
+      "type": "search",
+      "gender": "female",
+      "category": "lace",
+      "style": "African lace gowns",
+      "region": "Africa",
+      "title": "African lace gowns",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+lace+gowns",
+      "search_query": "african lace gowns",
+      "tags": [
+        "african",
+        "female",
+        "gowns",
+        "lace"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 104,
+      "type": "search",
+      "gender": "female",
+      "category": "lace",
+      "style": "African cord lace styles",
+      "region": "Africa",
+      "title": "African cord lace styles",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+cord+lace+styles",
+      "search_query": "african cord lace styles",
+      "tags": [
+        "african",
+        "cord",
+        "female",
+        "lace",
+        "styles"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 105,
+      "type": "search",
+      "gender": "female",
+      "category": "party",
+      "style": "African prom dresses",
+      "region": "Africa",
+      "title": "African prom dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+prom+dresses",
+      "search_query": "african prom dresses",
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "party",
+        "prom"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 106,
+      "type": "search",
+      "gender": "female",
+      "category": "party",
+      "style": "African cocktail dresses",
+      "region": "Africa",
+      "title": "African cocktail dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+cocktail+dresses",
+      "search_query": "african cocktail dresses",
+      "tags": [
+        "african",
+        "cocktail",
+        "dresses",
+        "female",
+        "party"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 107,
+      "type": "search",
+      "gender": "female",
+      "category": "party",
+      "style": "African evening gowns",
+      "region": "Africa",
+      "title": "African evening gowns",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+evening+gowns",
+      "search_query": "african evening gowns",
+      "tags": [
+        "african",
+        "evening",
+        "female",
+        "gowns",
+        "party"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 108,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "African bridal reception dress",
+      "region": "Africa",
+      "title": "African bridal reception dress",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+bridal+reception+dress",
+      "search_query": "african bridal reception dress",
+      "tags": [
+        "african",
+        "bridal",
+        "dress",
+        "female",
+        "reception",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 109,
+      "type": "search",
+      "gender": "female",
+      "category": "wedding",
+      "style": "African mother of the bride outfits",
+      "region": "Africa",
+      "title": "African mother of the bride outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+mother+of+the+bride+outfits",
+      "search_query": "african mother of the bride outfits",
+      "tags": [
+        "african",
+        "bride",
+        "female",
+        "mother",
+        "outfits",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 110,
+      "type": "search",
+      "gender": "female",
+      "category": "maternity",
+      "style": "African maternity photoshoot dresses",
+      "region": "Africa",
+      "title": "African maternity photoshoot dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+maternity+photoshoot+dresses",
+      "search_query": "african maternity photoshoot dresses",
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "maternity",
+        "photoshoot"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 111,
+      "type": "search",
+      "gender": "female",
+      "category": "workwear",
+      "style": "African office wear women",
+      "region": "Africa",
+      "title": "African office wear women",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+office+wear+women",
+      "search_query": "african office wear women",
+      "tags": [
+        "african",
+        "female",
+        "office",
+        "wear",
+        "women",
+        "workwear"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 112,
+      "type": "search",
+      "gender": "female",
+      "category": "workwear",
+      "style": "African print blazer women",
+      "region": "Africa",
+      "title": "African print blazer women",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+blazer+women",
+      "search_query": "african print blazer women",
+      "tags": [
+        "african",
+        "blazer",
+        "female",
+        "print",
+        "women",
+        "workwear"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 113,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "African print two piece set",
+      "region": "Africa",
+      "title": "African print two piece set",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+two+piece+set",
+      "search_query": "african print two piece set",
+      "tags": [
+        "african",
+        "ankara",
+        "female",
+        "piece",
+        "print"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 114,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "African print co-ord",
+      "region": "Africa",
+      "title": "African print co-ord",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+co-ord",
+      "search_query": "african print co-ord",
+      "tags": [
+        "african",
+        "ankara",
+        "female",
+        "print"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 115,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "African print jumpsuit",
+      "region": "Africa",
+      "title": "African print jumpsuit",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+jumpsuit",
+      "search_query": "african print jumpsuit",
+      "tags": [
+        "african",
+        "ankara",
+        "female",
+        "jumpsuit",
+        "print"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 116,
+      "type": "search",
+      "gender": "female",
+      "category": "streetwear",
+      "style": "Afrocentric streetwear women",
+      "region": "Africa",
+      "title": "Afrocentric streetwear women",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=afrocentric+streetwear+women",
+      "search_query": "afrocentric streetwear women",
+      "tags": [
+        "afrocentric",
+        "female",
+        "streetwear",
+        "women"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 117,
+      "type": "search",
+      "gender": "female",
+      "category": "designer",
+      "style": "Modern African fashion designers",
+      "region": "Africa",
+      "title": "Modern African fashion designers",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=modern+african+fashion+designers",
+      "search_query": "modern african fashion designers",
+      "tags": [
+        "african",
+        "designer",
+        "designers",
+        "fashion",
+        "female",
+        "modern"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 118,
+      "type": "search",
+      "gender": "female",
+      "category": "runway",
+      "style": "African fashion week runway",
+      "region": "Africa",
+      "title": "African fashion week runway",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+fashion+week+runway",
+      "search_query": "african fashion week runway",
+      "tags": [
+        "african",
+        "fashion",
+        "female",
+        "runway",
+        "week"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 119,
+      "type": "search",
+      "gender": "female",
+      "category": "accessories",
+      "style": "African print bags",
+      "region": "Africa",
+      "title": "African print bags",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+bags",
+      "search_query": "african print bags",
+      "tags": [
+        "accessories",
+        "african",
+        "bags",
+        "female",
+        "print"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 120,
+      "type": "search",
+      "gender": "female",
+      "category": "accessories",
+      "style": "African beaded jewelry",
+      "region": "Africa",
+      "title": "African beaded jewelry",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+beaded+jewelry",
+      "search_query": "african beaded jewelry",
+      "tags": [
+        "accessories",
+        "african",
+        "beaded",
+        "female",
+        "jewelry"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 121,
+      "type": "search",
+      "gender": "female",
+      "category": "accessories",
+      "style": "African head wraps",
+      "region": "Africa",
+      "title": "African head wraps",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+head+wraps",
+      "search_query": "african head wraps",
+      "tags": [
+        "accessories",
+        "african",
+        "female",
+        "head",
+        "wraps"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 122,
+      "type": "search",
+      "gender": "female",
+      "category": "accessories",
+      "style": "African print shoes",
+      "region": "Africa",
+      "title": "African print shoes",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+shoes",
+      "search_query": "african print shoes",
+      "tags": [
+        "accessories",
+        "african",
+        "female",
+        "print",
+        "shoes"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 123,
+      "type": "search",
+      "gender": "female",
+      "category": "kids",
+      "style": "African print kids dresses",
+      "region": "Africa",
+      "title": "African print kids dresses",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+kids+dresses",
+      "search_query": "african print kids dresses",
+      "tags": [
+        "african",
+        "dresses",
+        "female",
+        "kids",
+        "print"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 124,
+      "type": "search",
+      "gender": "female",
+      "category": "family",
+      "style": "African mother and daughter matching outfits",
+      "region": "Africa",
+      "title": "African mother and daughter matching outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+mother+and+daughter+matching+outfits",
+      "search_query": "african mother and daughter matching outfits",
+      "tags": [
+        "african",
+        "daughter",
+        "family",
+        "female",
+        "matching",
+        "mother",
+        "outfits"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 125,
+      "type": "search",
+      "gender": "female",
+      "category": "family",
+      "style": "African family matching outfits",
+      "region": "Africa",
+      "title": "African family matching outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+family+matching+outfits",
+      "search_query": "african family matching outfits",
+      "tags": [
+        "african",
+        "family",
+        "female",
+        "matching",
+        "outfits"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 126,
+      "type": "search",
+      "gender": "female",
+      "category": "swimwear",
+      "style": "African print swimwear",
+      "region": "Africa",
+      "title": "African print swimwear",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+swimwear",
+      "search_query": "african print swimwear",
+      "tags": [
+        "african",
+        "female",
+        "print",
+        "swimwear"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 127,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "African print skirts",
+      "region": "Africa",
+      "title": "African print skirts",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+skirts",
+      "search_query": "african print skirts",
+      "tags": [
+        "african",
+        "ankara",
+        "female",
+        "print",
+        "skirts"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 128,
+      "type": "search",
+      "gender": "female",
+      "category": "ankara",
+      "style": "African print tops",
+      "region": "Africa",
+      "title": "African print tops",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+tops",
+      "search_query": "african print tops",
+      "tags": [
+        "african",
+        "ankara",
+        "female",
+        "print",
+        "tops"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 129,
+      "type": "search",
+      "gender": "male",
+      "category": "senator",
+      "style": "Senator styles for men",
+      "region": "Nigeria",
+      "title": "Senator styles for men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=senator+styles+for+men",
+      "search_query": "senator styles for men",
+      "tags": [
+        "male",
+        "senator",
+        "styles"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 130,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Native wear for men Nigeria",
+      "region": "Nigeria",
+      "title": "Native wear for men Nigeria",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=native+wear+for+men+nigeria",
+      "search_query": "native wear for men nigeria",
+      "tags": [
+        "male",
+        "native",
+        "nigeria",
+        "traditional",
+        "wear"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 131,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Buba and sokoto",
+      "region": "Nigeria",
+      "title": "Buba and sokoto",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=buba+and+sokoto",
+      "search_query": "buba and sokoto",
+      "tags": [
+        "buba",
+        "male",
+        "sokoto",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 132,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Isiagu for men",
+      "region": "Nigeria",
+      "title": "Isiagu for men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=isiagu+for+men",
+      "search_query": "isiagu for men",
+      "tags": [
+        "isiagu",
+        "male",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 133,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Igbo traditional attire men",
+      "region": "Nigeria",
+      "title": "Igbo traditional attire men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=igbo+traditional+attire+men",
+      "search_query": "igbo traditional attire men",
+      "tags": [
+        "attire",
+        "igbo",
+        "male",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 134,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Yoruba men aso oke",
+      "region": "Nigeria",
+      "title": "Yoruba men aso oke",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=yoruba+men+aso+oke",
+      "search_query": "yoruba men aso oke",
+      "tags": [
+        "male",
+        "traditional",
+        "yoruba"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 135,
+      "type": "search",
+      "gender": "male",
+      "category": "agbada",
+      "style": "Agbada embroidery designs",
+      "region": "West Africa",
+      "title": "Agbada embroidery designs",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=agbada+embroidery+designs",
+      "search_query": "agbada embroidery designs",
+      "tags": [
+        "agbada",
+        "designs",
+        "embroidery",
+        "male"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 136,
+      "type": "search",
+      "gender": "male",
+      "category": "wedding",
+      "style": "Agbada for grooms",
+      "region": "West Africa",
+      "title": "Agbada for grooms",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=agbada+for+grooms",
+      "search_query": "agbada for grooms",
+      "tags": [
+        "agbada",
+        "grooms",
+        "male",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 137,
+      "type": "search",
+      "gender": "male",
+      "category": "kaftan",
+      "style": "Kaftan for men luxury",
+      "region": "Africa",
+      "title": "Kaftan for men luxury",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kaftan+for+men+luxury",
+      "search_query": "kaftan for men luxury",
+      "tags": [
+        "kaftan",
+        "luxury",
+        "male"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 138,
+      "type": "search",
+      "gender": "male",
+      "category": "kente",
+      "style": "Kente shirts for men",
+      "region": "Ghana",
+      "title": "Kente shirts for men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kente+shirts+for+men",
+      "search_query": "kente shirts for men",
+      "tags": [
+        "kente",
+        "male",
+        "shirts"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 139,
+      "type": "search",
+      "gender": "male",
+      "category": "wedding",
+      "style": "Kente cloth groom outfit",
+      "region": "Ghana",
+      "title": "Kente cloth groom outfit",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kente+cloth+groom+outfit",
+      "search_query": "kente cloth groom outfit",
+      "tags": [
+        "cloth",
+        "groom",
+        "kente",
+        "male",
+        "outfit",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 140,
+      "type": "search",
+      "gender": "male",
+      "category": "wedding",
+      "style": "Ghana traditional wedding groom",
+      "region": "Ghana",
+      "title": "Ghana traditional wedding groom",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ghana+traditional+wedding+groom",
+      "search_query": "ghana traditional wedding groom",
+      "tags": [
+        "ghana",
+        "groom",
+        "male",
+        "traditional",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 141,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Batakari fugu smock men",
+      "region": "Ghana",
+      "title": "Batakari fugu smock men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=batakari+fugu+smock+men",
+      "search_query": "batakari fugu smock men",
+      "tags": [
+        "batakari",
+        "fugu",
+        "male",
+        "smock",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 142,
+      "type": "search",
+      "gender": "male",
+      "category": "kaftan",
+      "style": "Ghana men's kaftan",
+      "region": "Ghana",
+      "title": "Ghana men's kaftan",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ghana+men%27s+kaftan",
+      "search_query": "ghana men's kaftan",
+      "tags": [
+        "ghana",
+        "kaftan",
+        "male"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 143,
+      "type": "search",
+      "gender": "male",
+      "category": "engagement",
+      "style": "Ghana engagement groom attire",
+      "region": "Ghana",
+      "title": "Ghana engagement groom attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ghana+engagement+groom+attire",
+      "search_query": "ghana engagement groom attire",
+      "tags": [
+        "attire",
+        "engagement",
+        "ghana",
+        "groom",
+        "male"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 144,
+      "type": "search",
+      "gender": "male",
+      "category": "dashiki",
+      "style": "Dashiki shirts for men",
+      "region": "West Africa",
+      "title": "Dashiki shirts for men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=dashiki+shirts+for+men",
+      "search_query": "dashiki shirts for men",
+      "tags": [
+        "dashiki",
+        "male",
+        "shirts"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 145,
+      "type": "search",
+      "gender": "male",
+      "category": "ankara",
+      "style": "Ankara shirts for men",
+      "region": "West Africa",
+      "title": "Ankara shirts for men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+shirts+for+men",
+      "search_query": "ankara shirts for men",
+      "tags": [
+        "ankara",
+        "male",
+        "shirts"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 146,
+      "type": "search",
+      "gender": "male",
+      "category": "ankara",
+      "style": "Ankara suits for men",
+      "region": "West Africa",
+      "title": "Ankara suits for men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+suits+for+men",
+      "search_query": "ankara suits for men",
+      "tags": [
+        "ankara",
+        "male",
+        "suits"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 147,
+      "type": "search",
+      "gender": "male",
+      "category": "wedding",
+      "style": "Ankara groomsmen outfits",
+      "region": "West Africa",
+      "title": "Ankara groomsmen outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+groomsmen+outfits",
+      "search_query": "ankara groomsmen outfits",
+      "tags": [
+        "ankara",
+        "groomsmen",
+        "male",
+        "outfits",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 148,
+      "type": "search",
+      "gender": "male",
+      "category": "workwear",
+      "style": "African print blazer men",
+      "region": "Africa",
+      "title": "African print blazer men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+blazer+men",
+      "search_query": "african print blazer men",
+      "tags": [
+        "african",
+        "blazer",
+        "male",
+        "print",
+        "workwear"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 149,
+      "type": "search",
+      "gender": "male",
+      "category": "ankara",
+      "style": "African print shorts men",
+      "region": "Africa",
+      "title": "African print shorts men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+shorts+men",
+      "search_query": "african print shorts men",
+      "tags": [
+        "african",
+        "ankara",
+        "male",
+        "print",
+        "shorts"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 150,
+      "type": "search",
+      "gender": "male",
+      "category": "kitenge",
+      "style": "Kitenge shirts for men",
+      "region": "East Africa",
+      "title": "Kitenge shirts for men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kitenge+shirts+for+men",
+      "search_query": "kitenge shirts for men",
+      "tags": [
+        "kitenge",
+        "male",
+        "shirts"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 151,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Kanzu for men",
+      "region": "East Africa",
+      "title": "Kanzu for men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kanzu+for+men",
+      "search_query": "kanzu for men",
+      "tags": [
+        "kanzu",
+        "male",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 152,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Maasai men attire",
+      "region": "Kenya",
+      "title": "Maasai men attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=maasai+men+attire",
+      "search_query": "maasai men attire",
+      "tags": [
+        "attire",
+        "maasai",
+        "male",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 153,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Ethiopian men traditional clothing",
+      "region": "Ethiopia",
+      "title": "Ethiopian men traditional clothing",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ethiopian+men+traditional+clothing",
+      "search_query": "ethiopian men traditional clothing",
+      "tags": [
+        "clothing",
+        "ethiopian",
+        "male",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 154,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Zulu men traditional attire",
+      "region": "South Africa",
+      "title": "Zulu men traditional attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=zulu+men+traditional+attire",
+      "search_query": "zulu men traditional attire",
+      "tags": [
+        "attire",
+        "male",
+        "traditional",
+        "zulu"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 155,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Xhosa men traditional attire",
+      "region": "South Africa",
+      "title": "Xhosa men traditional attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=xhosa+men+traditional+attire",
+      "search_query": "xhosa men traditional attire",
+      "tags": [
+        "attire",
+        "male",
+        "traditional",
+        "xhosa"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 156,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Tswana men traditional attire",
+      "region": "Botswana",
+      "title": "Tswana men traditional attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=tswana+men+traditional+attire",
+      "search_query": "tswana men traditional attire",
+      "tags": [
+        "attire",
+        "male",
+        "traditional",
+        "tswana"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 157,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Sotho men blanket attire",
+      "region": "Lesotho",
+      "title": "Sotho men blanket attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=sotho+men+blanket+attire",
+      "search_query": "sotho men blanket attire",
+      "tags": [
+        "attire",
+        "blanket",
+        "male",
+        "sotho",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 158,
+      "type": "search",
+      "gender": "male",
+      "category": "shweshwe",
+      "style": "Shweshwe men's shirts",
+      "region": "South Africa",
+      "title": "Shweshwe men's shirts",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=shweshwe+men%27s+shirts",
+      "search_query": "shweshwe men's shirts",
+      "tags": [
+        "male",
+        "shirts",
+        "shweshwe"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 159,
+      "type": "search",
+      "gender": "male",
+      "category": "wedding",
+      "style": "South African groom traditional wear",
+      "region": "South Africa",
+      "title": "South African groom traditional wear",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=south+african+groom+traditional+wear",
+      "search_query": "south african groom traditional wear",
+      "tags": [
+        "african",
+        "groom",
+        "male",
+        "south",
+        "traditional",
+        "wear",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 160,
+      "type": "search",
+      "gender": "male",
+      "category": "boubou",
+      "style": "Senegalese boubou men",
+      "region": "Senegal",
+      "title": "Senegalese boubou men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=senegalese+boubou+men",
+      "search_query": "senegalese boubou men",
+      "tags": [
+        "boubou",
+        "male",
+        "senegalese"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 161,
+      "type": "search",
+      "gender": "male",
+      "category": "bogolan",
+      "style": "Malian bogolan men",
+      "region": "Mali",
+      "title": "Malian bogolan men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=malian+bogolan+men",
+      "search_query": "malian bogolan men",
+      "tags": [
+        "bogolan",
+        "male",
+        "malian"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 162,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Moroccan djellaba men",
+      "region": "Morocco",
+      "title": "Moroccan djellaba men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=moroccan+djellaba+men",
+      "search_query": "moroccan djellaba men",
+      "tags": [
+        "djellaba",
+        "male",
+        "moroccan",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 163,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "Egyptian galabeya men",
+      "region": "Egypt",
+      "title": "Egyptian galabeya men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=egyptian+galabeya+men",
+      "search_query": "egyptian galabeya men",
+      "tags": [
+        "egyptian",
+        "galabeya",
+        "male",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 164,
+      "type": "search",
+      "gender": "male",
+      "category": "tailoring",
+      "style": "African men's suits tailoring",
+      "region": "Africa",
+      "title": "African men's suits tailoring",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+men%27s+suits+tailoring",
+      "search_query": "african men's suits tailoring",
+      "tags": [
+        "african",
+        "male",
+        "suits",
+        "tailoring"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 165,
+      "type": "search",
+      "gender": "male",
+      "category": "casual",
+      "style": "African men's casual wear",
+      "region": "Africa",
+      "title": "African men's casual wear",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+men%27s+casual+wear",
+      "search_query": "african men's casual wear",
+      "tags": [
+        "african",
+        "casual",
+        "male",
+        "wear"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 166,
+      "type": "search",
+      "gender": "male",
+      "category": "streetwear",
+      "style": "Afrocentric streetwear men",
+      "region": "Africa",
+      "title": "Afrocentric streetwear men",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=afrocentric+streetwear+men",
+      "search_query": "afrocentric streetwear men",
+      "tags": [
+        "afrocentric",
+        "male",
+        "streetwear"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 167,
+      "type": "search",
+      "gender": "male",
+      "category": "accessories",
+      "style": "African men's caps and hats",
+      "region": "Africa",
+      "title": "African men's caps and hats",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+men%27s+caps+and+hats",
+      "search_query": "african men's caps and hats",
+      "tags": [
+        "accessories",
+        "african",
+        "caps",
+        "hats",
+        "male"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 168,
+      "type": "search",
+      "gender": "male",
+      "category": "accessories",
+      "style": "African men's shoes",
+      "region": "Africa",
+      "title": "African men's shoes",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+men%27s+shoes",
+      "search_query": "african men's shoes",
+      "tags": [
+        "accessories",
+        "african",
+        "male",
+        "shoes"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 169,
+      "type": "search",
+      "gender": "male",
+      "category": "accessories",
+      "style": "African men's jewelry beads",
+      "region": "Africa",
+      "title": "African men's jewelry beads",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+men%27s+jewelry+beads",
+      "search_query": "african men's jewelry beads",
+      "tags": [
+        "accessories",
+        "african",
+        "beads",
+        "jewelry",
+        "male"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 170,
+      "type": "search",
+      "gender": "male",
+      "category": "party",
+      "style": "African men's wedding guest outfits",
+      "region": "Africa",
+      "title": "African men's wedding guest outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+men%27s+wedding+guest+outfits",
+      "search_query": "african men's wedding guest outfits",
+      "tags": [
+        "african",
+        "guest",
+        "male",
+        "outfits",
+        "party",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 171,
+      "type": "search",
+      "gender": "male",
+      "category": "church",
+      "style": "African men's church outfits",
+      "region": "Africa",
+      "title": "African men's church outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+men%27s+church+outfits",
+      "search_query": "african men's church outfits",
+      "tags": [
+        "african",
+        "church",
+        "male",
+        "outfits"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 172,
+      "type": "search",
+      "gender": "male",
+      "category": "kids",
+      "style": "African print kids boys outfits",
+      "region": "Africa",
+      "title": "African print kids boys outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+print+kids+boys+outfits",
+      "search_query": "african print kids boys outfits",
+      "tags": [
+        "african",
+        "boys",
+        "kids",
+        "male",
+        "outfits",
+        "print"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 173,
+      "type": "search",
+      "gender": "male",
+      "category": "traditional",
+      "style": "African men's two piece native",
+      "region": "Africa",
+      "title": "African men's two piece native",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+men%27s+two+piece+native",
+      "search_query": "african men's two piece native",
+      "tags": [
+        "african",
+        "male",
+        "native",
+        "piece",
+        "traditional"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 174,
+      "type": "search",
+      "gender": "unisex",
+      "category": "fabric",
+      "style": "African wax print fabric",
+      "region": "Africa",
+      "title": "African wax print fabric",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+wax+print+fabric",
+      "search_query": "african wax print fabric",
+      "tags": [
+        "african",
+        "fabric",
+        "print",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 175,
+      "type": "search",
+      "gender": "unisex",
+      "category": "fabric",
+      "style": "Ankara fabric prints",
+      "region": "Africa",
+      "title": "Ankara fabric prints",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=ankara+fabric+prints",
+      "search_query": "ankara fabric prints",
+      "tags": [
+        "ankara",
+        "fabric",
+        "prints",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 176,
+      "type": "search",
+      "gender": "unisex",
+      "category": "fabric",
+      "style": "Kente cloth patterns",
+      "region": "Ghana",
+      "title": "Kente cloth patterns",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kente+cloth+patterns",
+      "search_query": "kente cloth patterns",
+      "tags": [
+        "cloth",
+        "fabric",
+        "kente",
+        "patterns",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 177,
+      "type": "search",
+      "gender": "unisex",
+      "category": "fabric",
+      "style": "Mud cloth patterns",
+      "region": "Mali",
+      "title": "Mud cloth patterns",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=mud+cloth+patterns",
+      "search_query": "mud cloth patterns",
+      "tags": [
+        "cloth",
+        "fabric",
+        "patterns",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 178,
+      "type": "search",
+      "gender": "unisex",
+      "category": "fabric",
+      "style": "Adire patterns",
+      "region": "Nigeria",
+      "title": "Adire patterns",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=adire+patterns",
+      "search_query": "adire patterns",
+      "tags": [
+        "adire",
+        "fabric",
+        "patterns",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 179,
+      "type": "search",
+      "gender": "unisex",
+      "category": "fabric",
+      "style": "Shweshwe patterns",
+      "region": "South Africa",
+      "title": "Shweshwe patterns",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=shweshwe+patterns",
+      "search_query": "shweshwe patterns",
+      "tags": [
+        "fabric",
+        "patterns",
+        "shweshwe",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 180,
+      "type": "search",
+      "gender": "unisex",
+      "category": "fabric",
+      "style": "Kitenge fabric prints",
+      "region": "East Africa",
+      "title": "Kitenge fabric prints",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=kitenge+fabric+prints",
+      "search_query": "kitenge fabric prints",
+      "tags": [
+        "fabric",
+        "kitenge",
+        "prints",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 181,
+      "type": "search",
+      "gender": "unisex",
+      "category": "fabric",
+      "style": "African lace fabric",
+      "region": "Africa",
+      "title": "African lace fabric",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+lace+fabric",
+      "search_query": "african lace fabric",
+      "tags": [
+        "african",
+        "fabric",
+        "lace",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 182,
+      "type": "search",
+      "gender": "unisex",
+      "category": "couples",
+      "style": "African couples matching outfits",
+      "region": "Africa",
+      "title": "African couples matching outfits",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+couples+matching+outfits",
+      "search_query": "african couples matching outfits",
+      "tags": [
+        "african",
+        "couples",
+        "matching",
+        "outfits",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 183,
+      "type": "search",
+      "gender": "unisex",
+      "category": "wedding",
+      "style": "African couples wedding attire",
+      "region": "Africa",
+      "title": "African couples wedding attire",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+couples+wedding+attire",
+      "search_query": "african couples wedding attire",
+      "tags": [
+        "african",
+        "attire",
+        "couples",
+        "unisex",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 184,
+      "type": "search",
+      "gender": "unisex",
+      "category": "wedding",
+      "style": "African traditional wedding colour themes",
+      "region": "Africa",
+      "title": "African traditional wedding colour themes",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+traditional+wedding+colour+themes",
+      "search_query": "african traditional wedding colour themes",
+      "tags": [
+        "african",
+        "colour",
+        "themes",
+        "traditional",
+        "unisex",
+        "wedding"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 185,
+      "type": "search",
+      "gender": "unisex",
+      "category": "moodboard",
+      "style": "African fashion moodboard",
+      "region": "Africa",
+      "title": "African fashion moodboard",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+fashion+moodboard",
+      "search_query": "african fashion moodboard",
+      "tags": [
+        "african",
+        "fashion",
+        "moodboard",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 186,
+      "type": "search",
+      "gender": "unisex",
+      "category": "illustration",
+      "style": "African fashion illustration",
+      "region": "Africa",
+      "title": "African fashion illustration",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+fashion+illustration",
+      "search_query": "african fashion illustration",
+      "tags": [
+        "african",
+        "fashion",
+        "illustration",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 187,
+      "type": "search",
+      "gender": "unisex",
+      "category": "design",
+      "style": "African tech pack flat sketches",
+      "region": "Africa",
+      "title": "African tech pack flat sketches",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+tech+pack+flat+sketches",
+      "search_query": "african tech pack flat sketches",
+      "tags": [
+        "african",
+        "design",
+        "flat",
+        "pack",
+        "sketches",
+        "tech",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 188,
+      "type": "search",
+      "gender": "unisex",
+      "category": "photoshoot",
+      "style": "African fashion photoshoot ideas",
+      "region": "Africa",
+      "title": "African fashion photoshoot ideas",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+fashion+photoshoot+ideas",
+      "search_query": "african fashion photoshoot ideas",
+      "tags": [
+        "african",
+        "fashion",
+        "ideas",
+        "photoshoot",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 189,
+      "type": "search",
+      "gender": "unisex",
+      "category": "lookbook",
+      "style": "African fashion lookbook",
+      "region": "Africa",
+      "title": "African fashion lookbook",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=african+fashion+lookbook",
+      "search_query": "african fashion lookbook",
+      "tags": [
+        "african",
+        "fashion",
+        "lookbook",
+        "unisex"
+      ],
+      "origin": "expanded"
+    },
+    {
+      "id": 190,
+      "type": "search",
+      "gender": "unisex",
+      "category": "trends",
+      "style": "Contemporary African fashion trends",
+      "region": "Africa",
+      "title": "Contemporary African fashion trends",
+      "source_account": null,
+      "url": "https://www.pinterest.com/search/pins/?q=contemporary+african+fashion+trends",
+      "search_query": "contemporary african fashion trends",
+      "tags": [
+        "african",
+        "contemporary",
+        "fashion",
+        "trends",
+        "unisex"
+      ],
+      "origin": "expanded"
+    }
+  ]
+}

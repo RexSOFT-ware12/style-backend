@@ -18,10 +18,18 @@ const { getApiEntitlement } = require("../lib/apiEntitlement");
 const { generateApiKey, hashApiKey } = require("../lib/apiKeyCrypto");
 const { API_TIERS, isSelfServeTier, getTierConfig } = require("../lib/apiTiers");
 const { reportOverageUnit } = require("../lib/stripeMeters");
+const { rollPeriodSet, isOverAllowance } = require("../lib/apiCredits");
+const { notifySubscriptionActive, notifySubscriptionCanceled, notifyPaymentFailed } = require("../lib/notify");
+
+const ACTIVE_STATES = ["active", "trialing"];
+const unixToDate = (n) => (n ? new Date(n * 1000) : null);
+// Safe user lookup for notification emails (legacy non-ObjectId ids won't throw).
+const findUserForEmail = (id) => (id ? User.findById(id).catch(() => null) : Promise.resolve(null));
 
 const router = express.Router();
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/$/, "");
+const WORKSPACE_URL = (process.env.WORKSPACE_URL || `${FRONTEND_URL}/workspace`).replace(/\/$/, "");
 const stripe = process.env.STRIPE_SECRET_KEY ? require("stripe")(process.env.STRIPE_SECRET_KEY) : null;
 const PREMIUM_PRICE_ID = process.env.STRIPE_PREMIUM_PRICE_ID; // Stripe Price for the $19.99-29.99/mo consumer plan
 
@@ -118,7 +126,7 @@ router.post("/portal", requireAuth, async (req, res, next) => {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${FRONTEND_URL}/account`,
+      return_url: WORKSPACE_URL,
     });
 
     res.json({ url: session.url });
@@ -226,8 +234,8 @@ router.post("/api-checkout", requireAuth, async (req, res, next) => {
         { price: overageSegmentedPriceId }, // metered — no quantity
         { price: overageBgOnlyPriceId }, // metered — no quantity
       ],
-      success_url: `${FRONTEND_URL}/account?apiUpgraded=1`,
-      cancel_url: `${FRONTEND_URL}/account?apiCanceled=1`,
+      success_url: `${WORKSPACE_URL}?billing=success`,
+      cancel_url: `${WORKSPACE_URL}?billing=canceled`,
       metadata: { userId: user.id, apiTier: tier },
       subscription_data: { metadata: { userId: user.id, apiTier: tier } },
     });
@@ -327,6 +335,12 @@ router.get("/api-key-status", async (req, res, next) => {
       return res.status(401).json({ error: "Invalid or revoked API key." });
     }
 
+    // A blocked account's API keys stop working immediately.
+    const keyOwner = await User.findById(key.userId).select("isBlocked").lean().catch(() => null);
+    if (keyOwner?.isBlocked) {
+      return res.status(403).json({ error: "This account has been suspended.", code: "ACCOUNT_BLOCKED" });
+    }
+
     const apiSub = await ApiSubscription.findOne({ userId: key.userId });
     const entitlement = getApiEntitlement(apiSub);
 
@@ -397,7 +411,8 @@ router.post("/api-usage", async (req, res, next) => {
 
     const usedAfter = updated.usage.segmentedCount + updated.usage.bgOnlyCount;
     const usedBefore = usedAfter - 1;
-    const isOverage = typeof updated.quota === "number" && usedBefore >= updated.quota;
+    // Over-allowance = used more than (monthly quota + carried-over credits).
+    const isOverage = isOverAllowance(updated, usedBefore);
 
     if (isOverage) {
       // Idempotency key: stable per (key, type, running count) so a retry
@@ -406,7 +421,15 @@ router.post("/api-usage", async (req, res, next) => {
       await reportOverageUnit(stripe, type, updated.stripeCustomerId, idempotencyKey);
     }
 
-    res.json({ recorded: true, type, usedThisPeriod: usedAfter, quota: updated.quota, billedAsOverage: isOverage });
+    res.json({
+      recorded: true,
+      type,
+      usedThisPeriod: usedAfter,
+      quota: updated.quota,
+      rolloverCredits: updated.rolloverCredits || 0,
+      allowance: typeof updated.quota === "number" ? updated.quota + (updated.rolloverCredits || 0) : null,
+      billedAsOverage: isOverage,
+    });
   } catch (err) {
     next(err);
   }
@@ -500,6 +523,8 @@ router.post("/webhook", async (req, res) => {
           const periodRolledOver =
             existing?.currentPeriodEnd && newPeriodStart && newPeriodStart.getTime() >= existing.currentPeriodEnd.getTime();
 
+          const wasActive = existing && ACTIVE_STATES.includes(existing.status);
+
           await ApiSubscription.findOneAndUpdate(
             { userId: userId || existing?.userId },
             {
@@ -513,15 +538,37 @@ router.post("/webhook", async (req, res) => {
                 "stripeSubscriptionItemIds.overageBgOnly": overageBgOnlyItem?.id,
                 currentPeriodStart: newPeriodStart,
                 currentPeriodEnd: newPeriodEnd,
-                // Only set quota if this doc doesn't already have a custom
-                // one (e.g. a hand-set enterprise quota) — plain tier
-                // lookup for starter/growth.
-                ...(existing?.quota == null ? { quota: getTierConfig(apiTier)?.quota ?? null } : {}),
-                ...(periodRolledOver ? { "usage.segmentedCount": 0, "usage.bgOnlyCount": 0 } : {}),
+                source: "stripe",
+                // Set the quota for a brand-new subscription or when the tier
+                // changed; otherwise keep whatever is there (e.g. a quota an
+                // admin adjusted by hand).
+                ...(!existing || existing.quota == null || existing.tier !== apiTier
+                  ? { quota: getTierConfig(apiTier)?.quota ?? null }
+                  : {}),
+                // New billing period: unused credits CARRY OVER (they never
+                // expire) and the usage counters go back to 0. The fresh
+                // monthly quota is then added on top automatically, because
+                // allowance = quota + rolloverCredits (lib/apiCredits.js).
+                ...(periodRolledOver ? rollPeriodSet(existing) : {}),
               },
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
           );
+
+          // Email once, when the API subscription first becomes active.
+          if (!wasActive && ACTIVE_STATES.includes(subscription.status)) {
+            const owner = await findUserForEmail(userId || existing?.userId);
+            if (owner) {
+              notifySubscriptionActive(owner, {
+                planName: getTierConfig(apiTier)?.label || "API subscription",
+                amountCents: baseItem.price?.unit_amount ?? null,
+                currency: baseItem.price?.currency,
+                interval: baseItem.price?.recurring?.interval || "month",
+                renewsOn: newPeriodEnd,
+                trialing: subscription.status === "trialing",
+              });
+            }
+          }
           break;
         }
 
@@ -531,6 +578,8 @@ router.post("/webhook", async (req, res) => {
           $or: [{ stripeSubscriptionId: subscription.id }, { stripeCustomerId: subscription.customer }],
         });
         if (user) {
+          const wasPremium = user.plan === "premium";
+          const prevStatus = user.subscriptionStatus;
           user.stripeSubscriptionId = subscription.id;
           user.subscriptionStatus = subscription.status;
           user.plan = ["active", "trialing"].includes(subscription.status) ? "premium" : "free";
@@ -552,6 +601,21 @@ router.post("/webhook", async (req, res) => {
           }
 
           await user.save();
+
+          // Emails fire on the transition only, so Stripe's repeated
+          // `updated` events don't produce duplicates.
+          if (user.plan === "premium" && !wasPremium) {
+            notifySubscriptionActive(user, {
+              planName: "FabricNow Premium",
+              amountCents: user.premiumUnitAmountCents,
+              currency: premiumItem?.price?.currency,
+              interval: premiumItem?.price?.recurring?.interval || "month",
+              renewsOn: unixToDate(premiumItem?.current_period_end ?? subscription.current_period_end),
+              trialing: subscription.status === "trialing",
+            });
+          } else if (subscription.status === "past_due" && prevStatus !== "past_due") {
+            notifyPaymentFailed(user, { planName: "FabricNow Premium" });
+          }
         }
         break;
       }
@@ -563,6 +627,13 @@ router.post("/webhook", async (req, res) => {
         if (apiSub) {
           apiSub.status = "canceled";
           await apiSub.save();
+          const apiOwner = await findUserForEmail(apiSub.userId);
+          if (apiOwner) {
+            notifySubscriptionCanceled(apiOwner, {
+              planName: getTierConfig(apiSub.tier)?.label || "API subscription",
+              endsOn: unixToDate(subscription.ended_at) || new Date(),
+            });
+          }
           break;
         }
 
@@ -571,6 +642,10 @@ router.post("/webhook", async (req, res) => {
           user.subscriptionStatus = "canceled";
           user.plan = "free";
           await user.save();
+          notifySubscriptionCanceled(user, {
+            planName: "FabricNow Premium",
+            endsOn: unixToDate(subscription.ended_at) || new Date(),
+          });
         }
         break;
       }

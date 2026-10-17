@@ -3,6 +3,10 @@ env: standard
 instance_class: F4_1G
 entrypoint: node src/server.js
 
+# Secrets live in secrets.yaml (git-ignored). Copy secrets.yaml.example, fill it in, then deploy.
+# includes:
+#   - secrets.yaml
+
 # min_instances keeps one instance warm at all times. Without this, App
 # Engine standard scales down to zero when idle, and the next request has
 # to cold-boot a fresh Node instance before it can even talk to GCS — which
@@ -15,4 +19,8 @@ env_variables:
   NODE_ENV: "production"
   STORAGE_BUCKET: "fabric-now"
   STORAGE_FOLDER: "FabricNow"
-  JWT_SECRET: "nevermissmytarget"
+  BG_MODEL_DIR: "/tmp/bg-models"
+  PINTEREST_REDIRECT_URI: "https://stream-sell.de.r.appspot.com/api/companies/pinterest/oauth/callback"
+  PINTEREST_FRONTEND_URL: "https://workspace.fabricnow.pro"
+  ADMIN_EMAILS: "support@fabricnow.pro"
+  SECRETS_ENCRYPTION_KEY: "nevermissmytarget@@!!"

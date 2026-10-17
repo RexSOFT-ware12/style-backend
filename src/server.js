@@ -6,6 +6,8 @@ const path = require("path");
 const fs = require("fs");
 
 const { connectDB } = require("./db");
+const { initSecrets } = require("./lib/secretsStore");
+const adminRoutes = require("./routes/admin");
 const productsRouter = require("./routes/products");
 const authRouter = require("./routes/auth");
 const statsRouter = require("./routes/stats");
@@ -15,6 +17,15 @@ const taxonomiesRouter = require("./routes/taxonomies");
 const poseToolRouter = require("./routes/poseTool");
 const billingRouter = require("./routes/billing");
 const svgCustomizeRouter = require("./routes/svgCustomize");
+const convertRouter = require("./routes/convert");
+const lookbookRoutes = require("./routes/lookbook");
+const storeExportRouter = require("./routes/storeExport");
+const workspaceRouter = require("./routes/workspace");
+const workspaceSuiteRouter = require("./routes/workspaceSuite");
+const companiesRouter = require("./routes/companies");
+const inspirationLibraryRouter = require("./routes/inspirationLibrary");
+const tailorToolsRouter = require("./routes/tailorTools");
+const patternLibraryRouter = require("./routes/patternLibrary");
 
 function resolveUploadDir() {
   const candidates = [
@@ -53,6 +64,12 @@ app.use(morgan("dev"));
 app.use("/api/orders/webhook", express.raw({ type: "application/json" }));
 app.use("/api/billing/webhook", express.raw({ type: "application/json" }));
 
+// Tailor Tools boards can carry a compressed photo underlay (stored in board.layers), so allow a bigger body on that route only.
+app.use("/api/tailor-tools", express.json({ limit: "6mb" }));
+// Fabric photos and design photos are sent as compressed data URLs.
+app.use("/api/workspace-suite", express.json({ limit: "6mb" }));
+app.use("/api/pattern-library", express.json({ limit: "6mb" }));
+app.use("/api/lookbooks", express.json({ limit: "20mb" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -92,6 +109,7 @@ app.get("/", (req, res) => {
       "GET    /api/orders/:orderId/download/:productId (auth required) — gated file download",
       "POST   /api/assistant/ask             — Fibo, the product-page fabric assistant",
       "POST   /api/assistant/chat            — Fibo Live Chat, the site-wide assistant",
+      "POST   /api/assistant/workspace       — Gemini-powered authenticated workspace copilot",
       "POST   /api/assistant/onboarding      (auth required) — first-signup Welcome page picks",
       "POST   /api/pose-tool/process         (auth required) — photo -> CLO3D pose notes + turnaround refs",
       "GET    /api/billing/status             (auth required) — trial/subscription status",
@@ -105,6 +123,10 @@ app.get("/", (req, res) => {
       "GET    /api/billing/api-key-status      (x-api-key header) — used by garment-service",
       "POST   /api/billing/api-usage           (x-api-key header) — used by garment-service",
       "POST   /api/billing/webhook            (Stripe only)",
+      "GET    /api/inspiration-library        (auth required) — shared Pinterest inspiration library, visible to all companies",
+      "GET    /api/inspiration-library/facets (auth required) — filter values (categories, regions, genders)",
+      "GET    /api/admin/*                    (admin only) users, companies, block, manual API plans, credits, provider keys",
+      "GET    /api/internal/provider-keys     (x-internal-secret) — provider keys for garment-service",
       "POST   /api/svg-customize/process      (auth + premium required) — customizable PNG->SVG trace",
     ],
   });
@@ -119,6 +141,20 @@ app.use("/api/assistant", assistantRouter);
 app.use("/api/pose-tool", poseToolRouter);
 app.use("/api/billing", billingRouter);
 app.use("/api/svg-customize", svgCustomizeRouter);
+app.use("/api/convert", convertRouter);
+app.use("/api/lookbooks", lookbookRoutes.router);
+app.use("/api/store-export", storeExportRouter);
+app.use("/l", lookbookRoutes.pub);
+app.use("/api/workspace", workspaceRouter);
+app.use("/api/workspace-suite", workspaceSuiteRouter);
+app.use("/api/companies", companiesRouter);
+app.use("/api/inspiration-library", inspirationLibraryRouter);
+app.use("/api/tailor-tools", tailorToolsRouter);
+app.use("/api/pattern-library", patternLibraryRouter);
+app.use("/api/admin", adminRoutes.router);
+app.use("/api/internal", adminRoutes.internalRouter);
+
+// Workspace is a separate React application. This API only exposes /api/workspace routes.
 
 // 404 handler
 app.use((req, res) => {
@@ -131,6 +167,12 @@ app.use((err, req, res, next) => {
   console.error(err);
 
   const status = err.status || 500;
+
+  // Errors that set publicMessage are safe to show to the user (e.g. "engine offline",
+  // "assistant unavailable"); everything else at 5xx stays generic.
+  if (err.publicMessage) {
+    return res.status(status).json({ error: err.publicMessage, ...(err.code ? { code: err.code } : {}) });
+  }
 
   // Below 500 (validation errors, "not found", multer rejections, etc.) are
   // expected, caller-facing errors — safe and useful to return verbatim.
@@ -145,6 +187,7 @@ app.use((err, req, res, next) => {
 });
 
 connectDB()
+  .then(() => initSecrets()) // apply provider keys saved from the admin dashboard
   .then(() => {
     app.listen(PORT, () => {
       console.log(`FabricNow API running on http://localhost:${PORT}`);

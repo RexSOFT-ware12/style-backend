@@ -1,9 +1,14 @@
 const express = require("express");
 const Product = require("../models/Product");
 const Taxonomy = require("../models/Taxonomy");
+const WorkspaceProject = require("../models/WorkspaceProject");
+const WorkspaceCollection = require("../models/WorkspaceCollection");
+const WorkspaceTeam = require("../models/WorkspaceTeam");
+const CompanyMembership = require("../models/CompanyMembership");
 const { askFibo, askSiteAssistant, askOnboardingPicks } = require("../lib/gemini");
 const { createRateLimiter } = require("../middleware/rateLimit");
 const { requireAuth } = require("../middleware/auth");
+const { requireCompany } = require("../middleware/company");
 
 const router = express.Router();
 
@@ -170,6 +175,64 @@ router.post("/chat", siteChatRateLimit, async (req, res, next) => {
     if (err.message === "GEMINI_API_KEY is not configured on the server") {
       return res.status(503).json({ error: "Live chat isn't configured yet — missing GEMINI_API_KEY." });
     }
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/assistant/workspace (auth required)
+// Gemini workspace copilot grounded in the authenticated user's own
+// products, collections, team/brand settings and production status.
+// ---------------------------------------------------------------------------
+router.post("/workspace", requireAuth, requireCompany, siteChatRateLimit, async (req, res, next) => {
+  try {
+    const { message, history = [] } = req.body || {};
+    if (!message || typeof message !== "string" || !message.trim()) return res.status(400).json({ error: "message is required" });
+    if (!Array.isArray(history) || history.length > 20) return res.status(400).json({ error: "history must be an array of at most 20 turns" });
+
+    const userId = req.user.id || req.user._id;
+    const [projects, collections, team] = await Promise.all([
+      WorkspaceProject.find({ companyId: req.company._id }).sort({ updatedAt: -1 }).limit(100).lean(),
+      WorkspaceCollection.find({ companyId: req.company._id }).sort({ updatedAt: -1 }).limit(50).lean(),
+      CompanyMembership.find({ companyId: req.company._id }).lean(),
+    ]);
+
+    const workspaceContext = {
+      products: projects.map(p => ({ id:String(p._id), name:p.name, sku:p.sku, category:p.category, fabric:p.fabric, color:p.color, style:p.style, status:p.status, readiness:p.readiness, tasks:p.tasks, listing:p.listing, seo:p.seo, assetsCount:(p.assets||[]).length, version:p.version })),
+      collections: collections.map(c => ({ id:String(c._id), name:c.name, season:c.season, status:c.status, productCount:(c.productIds||[]).length })),
+      team: { members: team.map(m=>({userId:String(m.userId),role:m.role,status:m.status})), company:{id:String(req.company._id),name:req.company.name}, brandKit:req.company.brandKit||{} },
+    };
+
+    const system = `You are the FabricNow Fashion OS workspace copilot. Use Gemini to help the authenticated user operate their fashion production workspace.
+
+You may answer about: product capture, garment extraction, fabrics, patterns, technical flats, measurements, BOMs, production packages, product photography, listings, SEO, collections, lookbooks, catalogues, assets, store exports, API integrations, team/brand settings and workflow readiness.
+
+GROUNDING RULES:
+- Treat the WORKSPACE SNAPSHOT below as the source of truth for this user's workspace.
+- Never invent a product, collection, status, readiness percentage, asset, team member or business fact not present in the snapshot.
+- You may give general workflow advice when the workspace data does not contain the answer, but label it as a recommendation rather than a workspace fact.
+- If asked to perform an action that the current chat endpoint cannot execute, explain what screen/action the user should use.
+- Be concise, practical and professional. Use short lists when helpful.
+
+WORKSPACE SNAPSHOT:
+${JSON.stringify(workspaceContext,null,2)}`;
+
+    const cleanHistory=history.filter(t=>t&&(t.role==='user'||t.role==='assistant')&&typeof t.text==='string').slice(-10);
+    const contents=[{role:'user',parts:[{text:system}]},{role:'model',parts:[{text:'Workspace context loaded. Ready to help.'}]}];
+    for(const turn of cleanHistory) contents.push({role:turn.role==='assistant'?'model':'user',parts:[{text:turn.text.slice(0,3000)}]});
+    contents.push({role:'user',parts:[{text:message.trim().slice(0,2000)}]});
+
+    const apiKey=process.env.GEMINI_API_KEY;
+    if(!apiKey) return res.status(503).json({error:'Workspace AI Assistant is not configured yet — missing GEMINI_API_KEY.'});
+    const model=process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+    const response=await fetch(`${url}?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents,generationConfig:{maxOutputTokens:900}})});
+    if(!response.ok){const t=await response.text().catch(()=>"");const e=new Error(`Gemini API error ${response.status}: ${t.slice(0,300)}`);e.status=503;e.code='ASSISTANT_UNAVAILABLE';e.publicMessage=response.status===429?'The assistant is busy right now. Please try again in a moment.':'The AI assistant is temporarily unavailable. Please try again shortly.';throw e}
+    const data=await response.json();
+    const reply=data?.candidates?.[0]?.content?.parts?.map(p=>p.text).join('') || 'I could not generate a response just now.';
+    res.json({reply});
+  } catch(err) {
+    if(err.message==='GEMINI_API_KEY is not configured on the server') return res.status(503).json({error:'Workspace AI Assistant is not configured yet — missing GEMINI_API_KEY.'});
     next(err);
   }
 });

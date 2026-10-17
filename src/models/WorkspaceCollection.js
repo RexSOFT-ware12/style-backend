@@ -1,0 +1,4 @@
+const { Schema, model } = require('mongoose');
+const schema = new Schema({
+  companyId:{type:Schema.Types.ObjectId,ref:'Company',index:true},userId:{type:Schema.Types.ObjectId,ref:'User',required:true,index:true},name:{type:String,required:true},season:String,description:String,status:{type:String,enum:['draft','review','approved','published'],default:'draft'},coverImage:String,productIds:[{type:Schema.Types.ObjectId,ref:'WorkspaceProject'}],brandKit:{type:Schema.Types.Mixed,default:{}},moodboard:[String],palette:[{name:String,hex:String}],lookbook:{type:Schema.Types.Mixed,default:{}},catalogue:{type:Schema.Types.Mixed,default:{}},meta:{type:Schema.Types.Mixed,default:{}}},{timestamps:true});
+schema.set('toJSON',{virtuals:true,transform:(_d,r)=>{r.id=r._id.toString();delete r._id;delete r.__v;return r;}}); module.exports=model('WorkspaceCollection',schema);

@@ -7,7 +7,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "seed-taxonomies": "node src/scripts/seed-taxonomies.js"
+    "seed-taxonomies": "node src/scripts/seed-taxonomies.js",
+    "migrate-company-workspaces": "node src/scripts/migrate-company-workspaces.js",
+    "migrate-quasiai-to-fabricnow": "node src/scripts/migrate-quasiai-to-fabricnow.js",
+    "seed-inspirations": "node src/scripts/seed-inspirations.js",
+    "fetch-bg-model": "node scripts/fetch-bg-model.js"
   },
   "dependencies": {
     "@google-cloud/secret-manager": "^7.0.0",
@@ -17,14 +21,18 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "geoip-lite": "^1.4.10",
     "google-auth-library": "^11.0.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.24.4",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "nanoid": "^3.3.7",
+    "nodemailer": "^6.10.1",
+    "onnxruntime-node": "^1.20.1",
     "potrace": "^2.1.8",
     "sharp": "^0.33.5",
-    "stripe": "^22.6.1"
+    "stripe": "^22.6.1",
+    "ua-parser-js": "^1.0.41"
   }
 }
