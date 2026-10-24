@@ -17,10 +17,11 @@ automatic_scaling:
 
 env_variables:
   NODE_ENV: "production"
+  PUBLIC_API_URL: "https://backend.fabricnow.pro"
   STORAGE_BUCKET: "fabric-now"
   STORAGE_FOLDER: "FabricNow"
   BG_MODEL_DIR: "/tmp/bg-models"
-  PINTEREST_REDIRECT_URI: "https://stream-sell.de.r.appspot.com/api/companies/pinterest/oauth/callback"
+  PINTEREST_REDIRECT_URI: "https://backend.fabricnow.pro/api/companies/pinterest/oauth/callback"
   PINTEREST_FRONTEND_URL: "https://workspace.fabricnow.pro"
   ADMIN_EMAILS: "support@fabricnow.pro"
   SECRETS_ENCRYPTION_KEY: "nevermissmytarget@@!!"

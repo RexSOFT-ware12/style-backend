@@ -11,6 +11,7 @@ const { convertPngToSvg } = require("../lib/svgConvert");
 const { buildImageBundleZip } = require("../lib/zipBundle");
 const { svgPreviewUpload } = require("../middleware/svgPreviewUpload");
 const { createRateLimiter } = require("../middleware/rateLimit");
+const { normalizeProductImageUrl } = require("../lib/productImageUrls");
 const { nanoid } = require("nanoid");
 const fs = require("fs");
 const os = require("os");
@@ -82,12 +83,13 @@ async function publishGeneratedDigitalFile(localPath, filename) {
 // file that was never actually sent to a bucket (that mismatch was why
 // uploaded images weren't showing up on the storefront).
 function toPublicUrl(req, file) {
+  const apiBase = (process.env.PUBLIC_API_URL || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
   if (file.publicUrl?.startsWith("gs://")) {
     const objectName = file.publicUrl.split("/").slice(3).join("/");
-    return `${req.protocol}://${req.get("host")}/api/products/assets/${encodeURIComponent(objectName)}`;
+    return `${apiBase}/api/products/assets/${encodeURIComponent(objectName)}`;
   }
   if (file.publicUrl) return file.publicUrl;
-  return `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+  return `${apiBase}/uploads/${file.filename}`;
 }
 
 // Permanent application URL for a private product image. GCS remains private;
@@ -180,6 +182,10 @@ function serialize(product) {
 
   return {
     ...rest,
+    image: normalizeProductImageUrl(rest.image),
+    heroImages: (rest.heroImages || []).map(normalizeProductImageUrl),
+    fabricImage: normalizeProductImageUrl(rest.fabricImage),
+    images: (rest.images || []).map(normalizeProductImageUrl),
     reviews: sortedReviews,
     rating,
     reviewCount,

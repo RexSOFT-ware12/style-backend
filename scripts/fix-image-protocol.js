@@ -1,12 +1,10 @@
 /**
- * One-time migration: rewrite any product image/fabricImage/images URLs
- * that were saved as http://<host>/api/products/assets/... back before the
- * `app.set("trust proxy", true)` fix, so they become https://.
+ * One-time migration: rewrite product image URLs stored with the former API
+ * hostname so they use PUBLIC_API_URL (or the current FabricNow API hostname).
  *
  * Safe to run more than once — it only touches URLs starting with the
- * literal "http://" prefix on your own API host, and does nothing to any
- * product that's already correct (e.g. the /images/NoImage.jpg default, or
- * an externally hosted image URL you might have set by hand).
+ * legacy API hostname, and does nothing to local paths or externally hosted
+ * images.
  *
  * Usage:
  *   node scripts/fix-image-protocol.js
@@ -16,34 +14,32 @@
 require("dotenv").config();
 const { connectDB, mongoose } = require("../src/db");
 const Product = require("../src/models/Product");
+const { LEGACY_API_HOST, normalizeProductImageUrl } = require("../src/lib/productImageUrls");
 
-// Adjust this if you serve the API from a different host/domain.
-const BAD_PREFIX = "http://stream-sell.de.r.appspot.com/api/products/assets/";
-const GOOD_PREFIX = "https://stream-sell.de.r.appspot.com/api/products/assets/";
-
-function fix(url) {
-  return typeof url === "string" && url.startsWith(BAD_PREFIX)
-    ? GOOD_PREFIX + url.slice(BAD_PREFIX.length)
-    : url;
-}
+const LEGACY_URL_REGEX = new RegExp(
+  `^https?:\\/\\/${LEGACY_API_HOST.replace(/\./g, "\\.")}(?::\\d+)?(?:\\/|$)`,
+  "i"
+);
 
 async function main() {
   await connectDB();
 
   const products = await Product.find({
     $or: [
-      { image: { $regex: `^${BAD_PREFIX}` } },
-      { fabricImage: { $regex: `^${BAD_PREFIX}` } },
-      { images: { $elemMatch: { $regex: `^${BAD_PREFIX}` } } },
+      { image: { $regex: LEGACY_URL_REGEX } },
+      { heroImages: { $elemMatch: { $regex: LEGACY_URL_REGEX } } },
+      { fabricImage: { $regex: LEGACY_URL_REGEX } },
+      { images: { $elemMatch: { $regex: LEGACY_URL_REGEX } } },
     ],
   });
 
-  console.log(`Found ${products.length} product(s) with http:// asset URLs.`);
+  console.log(`Found ${products.length} product(s) with legacy API image URLs.`);
 
   for (const product of products) {
-    product.image = fix(product.image);
-    product.fabricImage = fix(product.fabricImage);
-    product.images = (product.images || []).map(fix);
+    product.image = normalizeProductImageUrl(product.image);
+    product.heroImages = (product.heroImages || []).map(normalizeProductImageUrl);
+    product.fabricImage = normalizeProductImageUrl(product.fabricImage);
+    product.images = (product.images || []).map(normalizeProductImageUrl);
     await product.save();
     console.log(`Fixed: ${product.name} (${product._id})`);
   }
