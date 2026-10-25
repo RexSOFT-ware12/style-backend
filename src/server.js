@@ -26,6 +26,7 @@ const companiesRouter = require("./routes/companies");
 const inspirationLibraryRouter = require("./routes/inspirationLibrary");
 const tailorToolsRouter = require("./routes/tailorTools");
 const patternLibraryRouter = require("./routes/patternLibrary");
+const bodyMeasurementsRouter = require("./routes/bodyMeasurements");
 
 function resolveUploadDir() {
   const candidates = [
@@ -151,6 +152,7 @@ app.use("/api/companies", companiesRouter);
 app.use("/api/inspiration-library", inspirationLibraryRouter);
 app.use("/api/tailor-tools", tailorToolsRouter);
 app.use("/api/pattern-library", patternLibraryRouter);
+app.use("/api/body-measurements", bodyMeasurementsRouter);
 app.use("/api/admin", adminRoutes.router);
 app.use("/api/internal", adminRoutes.internalRouter);
 
