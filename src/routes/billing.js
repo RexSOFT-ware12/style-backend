@@ -136,6 +136,200 @@ router.post("/portal", requireAuth, async (req, res, next) => {
 });
 
 // ===========================================================================
+// Saved payment methods (cards)
+//
+// Card details are collected by Stripe Elements in the browser and go straight
+// to Stripe — the FabricNow backend never receives the card number or CVC, so
+// nothing sensitive is stored (or needs encrypting) on our side. Stripe keeps
+// the card encrypted and PCI-compliant; we only hold the Stripe customer id
+// (User.stripeCustomerId) and read back safe display data: brand, last 4,
+// expiry. Stripe is the single source of truth, so there is no card table to
+// keep in sync.
+// ===========================================================================
+const { createRateLimiter } = require("../middleware/rateLimit");
+const cardWriteLimiter = createRateLimiter({
+  windowMs: 10 * 60_000,
+  max: 15, // slows down card-testing attacks hammering the setup endpoint
+  message: "Too many card attempts — please wait a few minutes and try again.",
+});
+
+const STRIPE_OFF = { error: "Payments aren't configured yet. Set STRIPE_SECRET_KEY." };
+
+async function ensureStripeCustomer(user) {
+  if (user.stripeCustomerId) return user.stripeCustomerId;
+  const customer = await stripe.customers.create({
+    email: user.email,
+    name: user.name,
+    metadata: { userId: user.id },
+  });
+  user.stripeCustomerId = customer.id;
+  await user.save();
+  return customer.id;
+}
+
+const toCardJson = (pm, defaultId) => ({
+  id: pm.id,
+  brand: pm.card?.brand || "unknown", // visa | mastercard | amex | discover | ...
+  last4: pm.card?.last4 || "",
+  expMonth: pm.card?.exp_month || null,
+  expYear: pm.card?.exp_year || null,
+  funding: pm.card?.funding || null, // credit | debit | prepaid
+  holder: pm.billing_details?.name || null,
+  isDefault: pm.id === defaultId,
+  createdAt: unixToDate(pm.created),
+});
+
+async function listCards(customerId) {
+  const [customer, methods] = await Promise.all([
+    stripe.customers.retrieve(customerId),
+    stripe.paymentMethods.list({ customer: customerId, type: "card", limit: 20 }),
+  ]);
+  const defaultId = customer.deleted ? null : customer.invoice_settings?.default_payment_method || null;
+  const cards = methods.data.map((pm) => toCardJson(pm, defaultId));
+  // Default card first, then newest.
+  cards.sort((a, b) => Number(b.isDefault) - Number(a.isDefault) || new Date(b.createdAt) - new Date(a.createdAt));
+  return cards;
+}
+
+// Make `paymentMethodId` the card used for every future invoice: the customer
+// default, plus the live API subscription if it carries its own default.
+async function applyDefaultCard(userId, customerId, paymentMethodId) {
+  await stripe.customers.update(customerId, {
+    invoice_settings: { default_payment_method: paymentMethodId },
+  });
+  const sub = await ApiSubscription.findOne({ userId });
+  if (sub?.stripeSubscriptionId && ["active", "trialing", "past_due"].includes(sub.status)) {
+    try {
+      await stripe.subscriptions.update(sub.stripeSubscriptionId, { default_payment_method: paymentMethodId });
+    } catch (err) {
+      console.error("Could not move subscription to the new default card:", err.message);
+    }
+  }
+}
+
+// Load a card and make sure it belongs to THIS user's Stripe customer, so a
+// guessed payment-method id can never touch someone else's card.
+async function ownedCard(user, paymentMethodId) {
+  if (!user?.stripeCustomerId || !/^pm_[A-Za-z0-9]+$/.test(String(paymentMethodId || ""))) return null;
+  const pm = await stripe.paymentMethods.retrieve(paymentMethodId).catch(() => null);
+  return pm && pm.customer === user.stripeCustomerId && pm.type === "card" ? pm : null;
+}
+
+// GET /api/billing/payment-methods  (auth required)
+router.get("/payment-methods", requireAuth, async (req, res, next) => {
+  try {
+    if (!stripe) return res.status(500).json(STRIPE_OFF);
+    const user = await User.findById(req.user.sub);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user.stripeCustomerId) return res.json({ cards: [] });
+    res.json({ cards: await listCards(user.stripeCustomerId) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/billing/payment-methods/setup-intent  (auth required)
+// Returns a short-lived client secret the browser uses to hand the card to
+// Stripe directly. `off_session` usage lets the monthly renewal and metered
+// overage be charged without the customer present.
+router.post("/payment-methods/setup-intent", requireAuth, cardWriteLimiter, async (req, res, next) => {
+  try {
+    if (!stripe) return res.status(500).json(STRIPE_OFF);
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+    if (!publishableKey) {
+      return res.status(500).json({ error: "Card entry isn't configured yet. Set STRIPE_PUBLISHABLE_KEY." });
+    }
+    const user = await User.findById(req.user.sub);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const customerId = await ensureStripeCustomer(user);
+    const intent = await stripe.setupIntents.create({
+      customer: customerId,
+      usage: "off_session",
+      payment_method_types: ["card"],
+      metadata: { userId: user.id },
+    });
+    res.json({ clientSecret: intent.client_secret, publishableKey });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/billing/payment-methods/confirm  (auth required)
+// body: { setupIntentId, makeDefault? }
+// Called after the browser confirmed the SetupIntent with Stripe. Verifies the
+// result server-side (never trusting the client) and sets the default card —
+// automatically for the first card on the account.
+router.post("/payment-methods/confirm", requireAuth, cardWriteLimiter, async (req, res, next) => {
+  try {
+    if (!stripe) return res.status(500).json(STRIPE_OFF);
+    const { setupIntentId, makeDefault } = req.body || {};
+    if (!/^seti_[A-Za-z0-9]+$/.test(String(setupIntentId || ""))) {
+      return res.status(400).json({ error: "setupIntentId is required." });
+    }
+    const user = await User.findById(req.user.sub);
+    if (!user?.stripeCustomerId) return res.status(400).json({ error: "No billing account found for this user yet." });
+
+    const intent = await stripe.setupIntents.retrieve(setupIntentId);
+    if (intent.customer !== user.stripeCustomerId) return res.status(403).json({ error: "That card setup doesn't belong to this account." });
+    if (intent.status !== "succeeded" || !intent.payment_method) {
+      return res.status(400).json({ error: "The card couldn't be verified. Please try again or use another card." });
+    }
+
+    const before = await listCards(user.stripeCustomerId);
+    const hasDefault = before.some((c) => c.isDefault && c.id !== intent.payment_method);
+    if (makeDefault || !hasDefault) await applyDefaultCard(user.id, user.stripeCustomerId, intent.payment_method);
+
+    res.status(201).json({ cards: await listCards(user.stripeCustomerId), added: intent.payment_method });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/billing/payment-methods/:id/default  (auth required)
+router.post("/payment-methods/:id/default", requireAuth, async (req, res, next) => {
+  try {
+    if (!stripe) return res.status(500).json(STRIPE_OFF);
+    const user = await User.findById(req.user.sub);
+    if (!(await ownedCard(user, req.params.id))) return res.status(404).json({ error: "Card not found." });
+    await applyDefaultCard(user.id, user.stripeCustomerId, req.params.id);
+    res.json({ cards: await listCards(user.stripeCustomerId) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/billing/payment-methods/:id  (auth required)
+// Removing the only card is blocked while a subscription is live (the next
+// renewal would fail); removing the default promotes the newest other card.
+router.delete("/payment-methods/:id", requireAuth, async (req, res, next) => {
+  try {
+    if (!stripe) return res.status(500).json(STRIPE_OFF);
+    const user = await User.findById(req.user.sub);
+    if (!(await ownedCard(user, req.params.id))) return res.status(404).json({ error: "Card not found." });
+
+    const cards = await listCards(user.stripeCustomerId);
+    const target = cards.find((c) => c.id === req.params.id);
+    const others = cards.filter((c) => c.id !== req.params.id);
+
+    const sub = await ApiSubscription.findOne({ userId: user.id });
+    const live = sub && ["active", "trialing", "past_due"].includes(sub.status);
+    if (live && others.length === 0) {
+      return res.status(400).json({
+        error: "This is your only card and your subscription is active. Add another card before removing it.",
+        code: "LAST_CARD",
+      });
+    }
+
+    await stripe.paymentMethods.detach(req.params.id);
+    if (target?.isDefault && others.length) await applyDefaultCard(user.id, user.stripeCustomerId, others[0].id);
+    res.json({ cards: await listCards(user.stripeCustomerId) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ===========================================================================
 // API-access tiers (Garment Tool via API key) — separate product from the
 // consumer Premium plan above. See lib/apiTiers.js for pricing/quota config.
 // ===========================================================================
