@@ -27,13 +27,13 @@ npm start
 Run the Node API and Fabric Now Python worker as separate services. The Node API is the public service; the Python worker is protected by `FABRIC_NOW_INTERNAL_SECRET`.
 
 ## Paystack billing setup
-Create monthly USD plans in the Paystack dashboard with these amounts and set their plan codes in the server environment:
+Create monthly GHS plans in the Paystack dashboard with these amounts and set their plan codes and matching `*_AMOUNT` values in the server environment:
 
-- Premium: $29.99/month (`PAYSTACK_PREMIUM_PLAN_CODE`)
-- API Starter: $80/month (`PAYSTACK_API_STARTER_PLAN_CODE`)
-- API Growth: $2,900/month (`PAYSTACK_API_GROWTH_PLAN_CODE`)
+- Premium: GHS 350.13/month (`PAYSTACK_PREMIUM_PLAN_CODE`, `PAYSTACK_PREMIUM_AMOUNT`)
+- API Starter: GHS 934.00/month (`PAYSTACK_API_STARTER_PLAN_CODE`, `PAYSTACK_API_STARTER_AMOUNT`)
+- API Growth: GHS 35,025.00/month (`PAYSTACK_API_GROWTH_PLAN_CODE`, `PAYSTACK_API_GROWTH_AMOUNT`)
 
-Set `PAYSTACK_SECRET_KEY` and `PAYSTACK_CURRENCY=USD`. The Paystack merchant account must support USD. API overages are charged individually against the authorization from the subscriber's first checkout: $49 per segmented image and $20 per background-removal-only image.
+Set `PAYSTACK_SECRET_KEY`, `PAYSTACK_CURRENCY=GHS`, and the two overage amounts: GHS 572.08 per segmented image (`PAYSTACK_API_OVERAGE_SEGMENTED_AMOUNT`) and GHS 233.50 per background-removal-only image (`PAYSTACK_API_OVERAGE_BGONLY_AMOUNT`). API overages are charged individually against the authorization from the subscriber's first checkout. Product catalog prices remain USD and are converted to GHS for checkout using the fixed `PAYSTACK_USD_GHS_RATE=11.68`.
 
 Configure one Paystack webhook at `https://<api-host>/api/paystack/webhook`. The handler verifies `x-paystack-signature` and processes subscription creation/renewal/cancellation, failed invoices, and successful order payments. Do not configure separate billing and orders webhook URLs.
 

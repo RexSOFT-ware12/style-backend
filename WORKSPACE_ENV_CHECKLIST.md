@@ -6,10 +6,16 @@ Main Node backend:
 - `SECRETS_ENCRYPTION_KEY` (keep stable; encrypts Paystack reusable authorization data)
 - `GOOGLE_CLIENT_ID`
 - `PAYSTACK_SECRET_KEY`
-- `PAYSTACK_CURRENCY=USD` (USD must be enabled for the Paystack merchant account)
-- `PAYSTACK_PREMIUM_PLAN_CODE` (monthly USD 29.99)
-- `PAYSTACK_API_STARTER_PLAN_CODE` (monthly USD 80)
-- `PAYSTACK_API_GROWTH_PLAN_CODE` (monthly USD 2,900)
+- `PAYSTACK_CURRENCY=GHS`
+- `PAYSTACK_PREMIUM_PLAN_CODE` (monthly GHS 350.13)
+- `PAYSTACK_API_STARTER_PLAN_CODE` (monthly GHS 934.00)
+- `PAYSTACK_API_GROWTH_PLAN_CODE` (monthly GHS 35,025.00)
+- `PAYSTACK_PREMIUM_AMOUNT=350.13`
+- `PAYSTACK_API_STARTER_AMOUNT=934.00`
+- `PAYSTACK_API_GROWTH_AMOUNT=35025.00`
+- `PAYSTACK_API_OVERAGE_SEGMENTED_AMOUNT=572.08`
+- `PAYSTACK_API_OVERAGE_BGONLY_AMOUNT=233.50`
+- `PAYSTACK_USD_GHS_RATE=11.68` (fixed conversion for USD-priced product catalog orders)
 - Configure the Paystack webhook URL as `https://<api-host>/api/paystack/webhook`
   - Subscribe to `charge.success`, `subscription.create`, `subscription.not_renew`, `subscription.disable`, and `invoice.payment_failed`
 - `WORKSPACE_URL`

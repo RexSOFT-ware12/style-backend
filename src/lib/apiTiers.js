@@ -3,20 +3,17 @@
 // one). These are for developers calling the Garment Tool programmatically
 // via an API key, through garment-service's /api/v1/garment/process route.
 //
-// Pricing (repriced 2026-09 — positioned against traditional garment
-// photography/studio costs, not against our own compute cost):
-//   API Starter    $80/mo    — 3 processed images/mo included
-//   API Growth     $2,900/mo — 250 processed images/mo included
+// Paystack pricing is configured in the merchant currency via the
+// PAYSTACK_*_AMOUNT environment variables below.
+//   API Starter    — 3 processed images/mo included
+//   API Growth     — 250 processed images/mo included
 //   API Enterprise custom, ~$9,000/mo reference point — negotiated volume
 //     (e.g. ~10,000 images/mo), set by hand per customer
 //     (set up the self-serve plans in Paystack; see the environment checklist)
 //
 // Overage (same per-unit rate regardless of tier, once the included quota
 // for the current billing period is used up):
-//   $49.00 / image when the call included part segmentation (the OpenAI +
-//          HF-backed path — this is the expensive one)
-//   $20.00 / image for background-removal only (local model, cheap) —
-//          kept at the same ~40% ratio to the segmented rate as before
+// Per-image overage rates use the same Paystack currency as the subscriptions.
 //
 // Quota is a *soft* cap: going over it doesn't block the call, it just
 // starts getting billed as a Paystack authorization charge. If you'd rather
@@ -31,6 +28,7 @@ const API_TIERS = {
     monthlyPriceUsd: 80,
     quota: 3,
     planCodeEnvVar: "PAYSTACK_API_STARTER_PLAN_CODE",
+    amountEnvVar: "PAYSTACK_API_STARTER_AMOUNT",
   },
   growth: {
     id: "growth",
@@ -38,6 +36,7 @@ const API_TIERS = {
     monthlyPriceUsd: 2900,
     quota: 250,
     planCodeEnvVar: "PAYSTACK_API_GROWTH_PLAN_CODE",
+    amountEnvVar: "PAYSTACK_API_GROWTH_AMOUNT",
   },
   // No self-serve Checkout for this one — see /api/billing/api-checkout,
   // which explicitly rejects "enterprise". An admin creates the
@@ -64,13 +63,11 @@ const API_TIERS = {
 const OVERAGE = {
   segmented: {
     label: "segmented (background removal + part tracing)",
-    unitUsd: 49.0,
-    amountMinor: 4900,
+    amountEnvVar: "PAYSTACK_API_OVERAGE_SEGMENTED_AMOUNT",
   },
   bgOnly: {
     label: "background-removal only",
-    unitUsd: 20.0,
-    amountMinor: 2000,
+    amountEnvVar: "PAYSTACK_API_OVERAGE_BGONLY_AMOUNT",
   },
 };
 

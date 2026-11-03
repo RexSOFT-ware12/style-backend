@@ -2,11 +2,12 @@ const ApiSubscription = require("../models/ApiSubscription");
 const User = require("../models/User");
 const { OVERAGE } = require("./apiTiers");
 const { decrypt } = require("./secretsStore");
-const { chargeAuthorization, getCurrency, overageReference, verifyTransaction } = require("./paystack");
+const { chargeAuthorization, getConfiguredAmountMinor, getCurrency, overageReference, verifyTransaction } = require("./paystack");
 
 async function reportOverageUnit(apiSub, type, idempotencyKey) {
   const config = OVERAGE[type];
   if (!config) throw new Error(`Unknown overage type "${type}" — expected "segmented" or "bgOnly".`);
+  const amountMinor = getConfiguredAmountMinor(config.amountEnvVar);
   if (!process.env.PAYSTACK_SECRET_KEY) {
     console.error("API overage was not billed: PAYSTACK_SECRET_KEY is not configured.", { type, idempotencyKey });
     return false;
@@ -29,7 +30,7 @@ async function reportOverageUnit(apiSub, type, idempotencyKey) {
       const previous = await verifyTransaction(reference);
       if (
         previous.status === "success" &&
-        Number(previous.amount) === config.amountMinor &&
+        Number(previous.amount) === amountMinor &&
         String(previous.currency).toUpperCase() === getCurrency()
       ) {
         return true;
@@ -45,7 +46,7 @@ async function reportOverageUnit(apiSub, type, idempotencyKey) {
     const transaction = await chargeAuthorization({
       email: user.email,
       authorizationCode: decrypt(subscription.paystackAuthorizationCode),
-      amount: config.amountMinor,
+      amount: amountMinor,
       reference,
       metadata: { type: "api_overage", overageType: type, apiSubscriptionId: String(apiSub._id) },
     });

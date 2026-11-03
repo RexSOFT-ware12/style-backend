@@ -5,7 +5,7 @@ const Product = require("../models/Product");
 const { requireAuth } = require("../middleware/auth");
 const { DIGITAL_DIR } = require("../middleware/upload");
 const { streamObject } = require("../lib/gcs");
-const { getCurrency, initializeTransaction, verifyTransaction } = require("../lib/paystack");
+const { convertUsdToPaystackMinor, getCurrency, initializeTransaction, verifyTransaction } = require("../lib/paystack");
 
 const router = express.Router();
 
@@ -17,6 +17,8 @@ function serializeOrder(order) {
     id: obj.id,
     status: obj.status,
     total: obj.total,
+    amount: obj.paystackAmountMinor ?? null,
+    currency: obj.currency || null,
     items: obj.items.map((i) => ({
       productId: String(i.productId),
       name: i.name,
@@ -38,8 +40,9 @@ function serializeOrder(order) {
 router.post("/checkout", requireAuth, async (req, res, next) => {
   try {
     if (!process.env.PAYSTACK_SECRET_KEY) {
-      return res.status(500).json({
+      return res.status(503).json({
         error: "Payments aren't configured yet. Set PAYSTACK_SECRET_KEY on the server.",
+        code: "PAYSTACK_SECRET_MISSING",
       });
     }
 
@@ -70,17 +73,21 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
     }
 
     const total = orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const paystackAmountMinor = convertUsdToPaystackMinor(total);
+    const currency = getCurrency();
 
     const order = await Order.create({
       userId: req.user.sub,
       items: orderItems,
       total,
+      paystackAmountMinor,
+      currency,
       status: "pending",
     });
 
     const transaction = await initializeTransaction({
       email: req.user.email,
-      amount: Math.round(total * 100),
+      amount: paystackAmountMinor,
       callbackUrl: `${FRONTEND_URL}/checkout/success?order=${order.id}`,
       metadata: { orderId: order.id, userId: req.user.sub, product: "digital_order" },
     });
@@ -88,8 +95,17 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
     order.paystackReference = transaction.reference;
     await order.save();
 
-    res.json({ url: transaction.authorization_url, orderId: order.id, reference: transaction.reference });
+    res.json({ url: transaction.authorization_url, orderId: order.id, reference: transaction.reference, currency, amount: paystackAmountMinor });
   } catch (err) {
+    if (err.code?.startsWith("PAYSTACK_")) {
+      console.error("Paystack order checkout failed:", err.message);
+      const status = err.statusCode === 504
+        ? 504
+        : ["PAYSTACK_SECRET_MISSING", "PAYSTACK_CURRENCY_UNSUPPORTED", "PAYSTACK_PRICE_MISSING", "PAYSTACK_PRICE_INVALID", "PAYSTACK_FX_RATE_MISSING"].includes(err.code)
+          ? 503
+          : 502;
+      return res.status(status).json({ error: err.message, code: err.code });
+    }
     next(err);
   }
 });
@@ -118,7 +134,8 @@ router.processPaystackEvent = async function processPaystackEvent(event) {
       order.status !== "paid" &&
       verified.status === "success" &&
       String(verified.currency).toUpperCase() === getCurrency() &&
-      Number(verified.amount) === Math.round(order.total * 100)
+      Number(verified.amount) === order.paystackAmountMinor &&
+      String(order.currency).toUpperCase() === getCurrency()
     ) {
       order.paystackReference = event.data.reference;
       order.status = "paid";

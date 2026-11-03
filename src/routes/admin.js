@@ -235,7 +235,19 @@ router.get("/users/:id", async (req, res, next) => {
           createdAt: k.createdAt,
         })),
       },
-      tiers: Object.values(API_TIERS).map((t) => ({ id: t.id, label: t.label, monthlyPriceUsd: t.monthlyPriceUsd, quota: t.quota })),
+      tiers: Object.values(API_TIERS).map((t) => {
+        const currency = (process.env.PAYSTACK_CURRENCY || "USD").toUpperCase();
+        const configuredAmount = t.amountEnvVar ? Number(process.env[t.amountEnvVar]) : null;
+        const monthlyPriceAmount = Number.isFinite(configuredAmount) && configuredAmount > 0 ? configuredAmount : null;
+        return {
+          id: t.id,
+          label: t.label,
+          monthlyPriceUsd: currency === "USD" ? monthlyPriceAmount ?? t.monthlyPriceUsd : null,
+          monthlyPriceAmount,
+          monthlyPriceCurrency: currency,
+          quota: t.quota,
+        };
+      }),
     });
   } catch (err) {
     next(err);

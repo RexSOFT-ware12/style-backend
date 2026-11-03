@@ -15,6 +15,8 @@ const orderSchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     items: { type: [orderItemSchema], default: [] },
     total: { type: Number, default: 0 },
+    paystackAmountMinor: { type: Number, default: null },
+    currency: { type: String, default: null },
     status: { type: String, enum: ["pending", "paid"], default: "pending" },
     paystackReference: { type: String, default: null },
     paidAt: { type: Date, default: null },

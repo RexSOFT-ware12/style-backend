@@ -52,13 +52,44 @@ async function request(path, { method = "GET", body } = {}) {
 
 function getCurrency() {
   const currency = (process.env.PAYSTACK_CURRENCY || "USD").toUpperCase();
-  if (currency !== "USD") {
-    const error = new Error("PAYSTACK_CURRENCY must be USD until pricing is configured for another currency.");
+  if (!["GHS", "USD"].includes(currency)) {
+    const error = new Error("PAYSTACK_CURRENCY must be GHS or USD.");
     error.statusCode = 503;
     error.code = "PAYSTACK_CURRENCY_UNSUPPORTED";
     throw error;
   }
   return currency;
+}
+
+function getConfiguredAmountMinor(envName) {
+  const raw = process.env[envName];
+  const amount = Number(raw);
+  if (!raw || !Number.isFinite(amount) || amount <= 0 || Math.abs(amount * 100 - Math.round(amount * 100)) > 1e-7) {
+    const error = new Error(`${envName} must be set to a positive amount with no more than 2 decimal places.`);
+    error.statusCode = 503;
+    error.code = raw ? "PAYSTACK_PRICE_INVALID" : "PAYSTACK_PRICE_MISSING";
+    throw error;
+  }
+  return Math.round(amount * 100);
+}
+
+function getUsdGhsRate() {
+  const rate = Number(process.env.PAYSTACK_USD_GHS_RATE);
+  if (!Number.isFinite(rate) || rate <= 0) {
+    const error = new Error("PAYSTACK_USD_GHS_RATE must be set to the GHS conversion rate for USD catalog prices.");
+    error.statusCode = 503;
+    error.code = "PAYSTACK_FX_RATE_MISSING";
+    throw error;
+  }
+  return rate;
+}
+
+function convertUsdToPaystackMinor(amountUsd) {
+  if (!Number.isFinite(amountUsd) || amountUsd < 0) {
+    throw new Error("Order amount must be a non-negative USD amount.");
+  }
+  const amount = getCurrency() === "GHS" ? amountUsd * getUsdGhsRate() : amountUsd;
+  return Math.round(amount * 100);
 }
 
 async function getPlan(planCode, expectedAmount) {
@@ -135,9 +166,12 @@ function overageReference(idempotencyKey) {
 
 module.exports = {
   chargeAuthorization,
+  convertUsdToPaystackMinor,
   disableSubscription,
+  getConfiguredAmountMinor,
   getCurrency,
   getPlan,
+  getUsdGhsRate,
   initializeTransaction,
   overageReference,
   verifyTransaction,

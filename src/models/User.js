@@ -45,6 +45,9 @@ const userSchema = new Schema(
     // Cached from the Paystack plan/transaction that is actually billing
     // this user, rather than from the current plan configuration.
     premiumPlanCode: { type: String, required: false },
+    premiumUnitAmountMinor: { type: Number, required: false },
+    premiumCurrency: { type: String, enum: ["GHS", "USD"], required: false },
+    // Legacy USD-only field retained for existing API clients and records.
     premiumUnitAmountCents: { type: Number, required: false },
 
     // --- Admin dashboard controls ------------------------------------

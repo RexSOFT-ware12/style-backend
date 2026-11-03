@@ -34,6 +34,8 @@ function getApiEntitlement(apiSub) {
       used: 0,
       remaining: null,
       currentPeriodEnd: null,
+      billingAmountMinor: null,
+      billingCurrency: null,
       lapsed: false,
     };
   }
@@ -61,6 +63,8 @@ function getApiEntitlement(apiSub) {
     used: usedOf(apiSub),
     remaining: remainingOf(apiSub),
     currentPeriodEnd: apiSub.currentPeriodEnd,
+    billingAmountMinor: apiSub.billingAmountMinor ?? null,
+    billingCurrency: apiSub.billingCurrency || null,
     lapsed,
   };
 }

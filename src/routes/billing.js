@@ -5,7 +5,6 @@ const ApiSubscription = require("../models/ApiSubscription");
 const { requireAuth } = require("../middleware/auth");
 const { getEntitlement } = require("../lib/entitlement");
 const { getApiEntitlement } = require("../lib/apiEntitlement");
-const { CURRENT_PRICE_CENTS } = require("../lib/premiumPricing");
 const { generateApiKey, hashApiKey } = require("../lib/apiKeyCrypto");
 const { API_TIERS, isSelfServeTier, getTierConfig } = require("../lib/apiTiers");
 const { reportOverageUnit } = require("../lib/paystackOverages");
@@ -14,6 +13,7 @@ const { notifySubscriptionActive, notifySubscriptionCanceled, notifyPaymentFaile
 const { encrypt, decrypt } = require("../lib/secretsStore");
 const {
   disableSubscription,
+  getConfiguredAmountMinor,
   getCurrency,
   getPlan,
   initializeTransaction,
@@ -24,7 +24,7 @@ const router = express.Router();
 const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/$/, "");
 const WORKSPACE_URL = (process.env.WORKSPACE_URL || `${FRONTEND_URL}/workspace`).replace(/\/$/, "");
 const PREMIUM_PLAN_CODE = process.env.PAYSTACK_PREMIUM_PLAN_CODE;
-const PREMIUM_PRICE_MINOR = CURRENT_PRICE_CENTS;
+const PREMIUM_AMOUNT_ENV = "PAYSTACK_PREMIUM_AMOUNT";
 
 function findApiTierByPlanCode(planCode) {
   if (!planCode) return null;
@@ -60,13 +60,20 @@ function asDate(value) {
 }
 
 function getAmountMinor(tier) {
-  return Math.round(getTierConfig(tier).monthlyPriceUsd * 100);
+  return getConfiguredAmountMinor(getTierConfig(tier).amountEnvVar);
 }
 
 function handlePaystackError(err, res, next) {
   if (!err.code?.startsWith("PAYSTACK_")) return next(err);
   console.error("Paystack billing request failed:", err.message);
-  const status = ["PAYSTACK_PLAN_MISMATCH", "PAYSTACK_SECRET_MISSING", "PAYSTACK_CURRENCY_UNSUPPORTED"].includes(err.code)
+  const status = [
+    "PAYSTACK_PLAN_MISMATCH",
+    "PAYSTACK_SECRET_MISSING",
+    "PAYSTACK_CURRENCY_UNSUPPORTED",
+    "PAYSTACK_PRICE_MISSING",
+    "PAYSTACK_PRICE_INVALID",
+    "PAYSTACK_FX_RATE_MISSING",
+  ].includes(err.code)
     ? 503
     : err.code === "PAYSTACK_NETWORK_ERROR" && err.statusCode === 504
       ? 504
@@ -121,6 +128,19 @@ async function applyPaystackSubscription(data, { canceled = false, notRenewing =
   const nextPaymentDate = asDate(data.next_payment_date || data.subscription?.next_payment_date);
 
   if (tier) {
+    const expectedAmount = getAmountMinor(tier);
+    if (
+      (data.amount != null && Number(data.amount) !== expectedAmount) ||
+      (data.currency && String(data.currency).toUpperCase() !== getCurrency())
+    ) {
+      console.error("Paystack API subscription amount or currency did not match the configured plan.", {
+        tier,
+        planCode,
+        amount: data.amount,
+        currency: data.currency,
+      });
+      return;
+    }
     const existing = existingApi || await ApiSubscription.findOne({ userId: user._id });
     const now = new Date();
     const periodRolledOver =
@@ -134,6 +154,8 @@ async function applyPaystackSubscription(data, { canceled = false, notRenewing =
       paystackCustomerCode: customerCode,
       paystackSubscriptionCode: subscriptionCode || existing?.paystackSubscriptionCode,
       paystackEmailToken: emailToken ? encrypt(emailToken) : existing?.paystackEmailToken,
+      billingAmountMinor: data.amount == null ? expectedAmount : Number(data.amount),
+      billingCurrency: data.currency ? String(data.currency).toUpperCase() : getCurrency(),
       cancelAtPeriodEnd: notRenewing || (canceled && Boolean(periodEnd && periodEnd > now)),
       currentPeriodStart: existing?.currentPeriodEnd && periodRolledOver ? existing.currentPeriodEnd : existing?.currentPeriodStart || now,
       currentPeriodEnd: periodEnd || addMonthsUTC(now, 1),
@@ -152,8 +174,8 @@ async function applyPaystackSubscription(data, { canceled = false, notRenewing =
     if (!canceled && !notRenewing && !ACTIVE_STATES.includes(existing?.status)) {
       notifySubscriptionActive(user, {
         planName: getTierConfig(tier).label,
-        amountCents: data.amount ?? getAmountMinor(tier),
-        currency: data.currency || "USD",
+        amountCents: data.amount ?? expectedAmount,
+        currency: data.currency || getCurrency(),
         interval: "month",
         renewsOn: updated.currentPeriodEnd,
         trialing: false,
@@ -168,6 +190,18 @@ async function applyPaystackSubscription(data, { canceled = false, notRenewing =
 
   if (!existingPremium && (!PREMIUM_PLAN_CODE || planCode !== PREMIUM_PLAN_CODE)) {
     console.error("Paystack subscription webhook has an unrecognized plan code.", { planCode });
+    return;
+  }
+  const expectedPremiumAmount = getConfiguredAmountMinor(PREMIUM_AMOUNT_ENV);
+  if (
+    (data.amount != null && Number(data.amount) !== expectedPremiumAmount) ||
+    (data.currency && String(data.currency).toUpperCase() !== getCurrency())
+  ) {
+    console.error("Paystack Premium subscription amount or currency did not match the configured plan.", {
+      planCode,
+      amount: data.amount,
+      currency: data.currency,
+    });
     return;
   }
 
@@ -185,14 +219,17 @@ async function applyPaystackSubscription(data, { canceled = false, notRenewing =
   user.subscriptionStatus = canceled ? "canceled" : "active";
   user.plan = canceled && !user.subscriptionCancelAtPeriodEnd ? "free" : "premium";
   user.premiumPlanCode = planCode || user.premiumPlanCode;
-  user.premiumUnitAmountCents = data.amount ?? user.premiumUnitAmountCents ?? PREMIUM_PRICE_MINOR;
+  user.premiumUnitAmountMinor = data.amount ?? user.premiumUnitAmountMinor ?? expectedPremiumAmount;
+  user.premiumCurrency = data.currency ? String(data.currency).toUpperCase() : getCurrency();
+  user.premiumUnitAmountCents =
+    user.premiumCurrency === "USD" ? user.premiumUnitAmountMinor : user.premiumUnitAmountCents;
   await user.save();
 
   if (!canceled && !notRenewing && !wasPremium) {
     notifySubscriptionActive(user, {
       planName: "FabricNow Premium",
-      amountCents: user.premiumUnitAmountCents,
-      currency: data.currency || "USD",
+      amountCents: user.premiumUnitAmountMinor,
+      currency: user.premiumCurrency,
       interval: "month",
       renewsOn: user.subscriptionCurrentPeriodEnd,
       trialing: false,
@@ -247,6 +284,20 @@ async function applySuccessfulCharge(data) {
   const nextPaymentDate = asDate(data.subscription?.next_payment_date);
 
   if (apiSub) {
+    const expectedAmount = apiSub.billingAmountMinor ?? getAmountMinor(apiSub.tier);
+    const expectedCurrency = apiSub.billingCurrency || getCurrency();
+    if (
+      Number(data.amount) !== expectedAmount ||
+      String(data.currency).toUpperCase() !== expectedCurrency
+    ) {
+      console.error("Paystack API renewal amount or currency did not match the stored plan.", {
+        userId: String(apiSub.userId),
+        reference: data.reference,
+        amount: data.amount,
+        currency: data.currency,
+      });
+      return;
+    }
     const periodRolledOver =
       apiSub.currentPeriodEnd &&
       now.getTime() >= new Date(apiSub.currentPeriodEnd).getTime();
@@ -271,7 +322,9 @@ async function applySuccessfulCharge(data) {
   const email = getCustomerEmail(data);
   const user = email
     ? await User.findOne({ email }).select("+paystackAuthorizationCode")
-    : null;
+    : getSubscriptionCode(data)
+      ? await User.findOne({ paystackSubscriptionCode: getSubscriptionCode(data) }).select("+paystackAuthorizationCode")
+      : null;
   if (
     tier &&
     user &&
@@ -289,6 +342,8 @@ async function applySuccessfulCharge(data) {
           cancelAtPeriodEnd: false,
           paystackCustomerCode: customerCode,
           paystackSubscriptionCode: getSubscriptionCode(data),
+          billingAmountMinor: Number(data.amount),
+          billingCurrency: String(data.currency).toUpperCase(),
           ...(authorizationCode ? { paystackAuthorizationCode: encrypt(authorizationCode) } : {}),
           currentPeriodStart: now,
           currentPeriodEnd: nextPaymentDate || addMonthsUTC(now, 1),
@@ -311,9 +366,14 @@ async function applySuccessfulCharge(data) {
     planCode === PREMIUM_PLAN_CODE ||
     (getSubscriptionCode(data) && getSubscriptionCode(data) === user?.paystackSubscriptionCode);
   if (!user || !matchesPremium) return;
-  const expectedPremiumAmount =
-    planCode === PREMIUM_PLAN_CODE ? PREMIUM_PRICE_MINOR : user.premiumUnitAmountCents || PREMIUM_PRICE_MINOR;
-  if (Number(data.amount) !== expectedPremiumAmount || String(data.currency).toUpperCase() !== getCurrency()) {
+  const expectedPremiumAmount = user.premiumUnitAmountMinor ??
+    user.premiumUnitAmountCents ??
+    getConfiguredAmountMinor(PREMIUM_AMOUNT_ENV);
+  const expectedPremiumCurrency = user.premiumCurrency || getCurrency();
+  if (
+    Number(data.amount) !== expectedPremiumAmount ||
+    String(data.currency).toUpperCase() !== expectedPremiumCurrency
+  ) {
     console.error("Paystack Premium renewal amount or currency did not match the stored plan.", {
       userId: user.id,
       reference: data.reference,
@@ -333,14 +393,16 @@ async function applySuccessfulCharge(data) {
   if (nextPaymentDate) user.subscriptionCurrentPeriodEnd = nextPaymentDate;
   if (planCode === PREMIUM_PLAN_CODE) {
     user.premiumPlanCode = planCode;
-    user.premiumUnitAmountCents = Number(data.amount) || PREMIUM_PRICE_MINOR;
+    user.premiumUnitAmountMinor = Number(data.amount);
+    user.premiumCurrency = String(data.currency).toUpperCase();
+    if (user.premiumCurrency === "USD") user.premiumUnitAmountCents = Number(data.amount);
   }
   await user.save();
   if (wasPastDue) {
     notifySubscriptionActive(user, {
       planName: "FabricNow Premium",
-      amountCents: data.amount || user.premiumUnitAmountCents,
-      currency: data.currency || "USD",
+      amountCents: data.amount || user.premiumUnitAmountMinor || user.premiumUnitAmountCents,
+      currency: data.currency || user.premiumCurrency || getCurrency(),
       interval: "month",
       renewsOn: user.subscriptionCurrentPeriodEnd,
       trialing: false,
@@ -378,15 +440,21 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
       return res.status(400).json({ error: "You already have an active Premium subscription.", code: "SUBSCRIPTION_EXISTS" });
     }
 
-    await getPlan(PREMIUM_PLAN_CODE, PREMIUM_PRICE_MINOR);
+    const premiumAmount = getConfiguredAmountMinor(PREMIUM_AMOUNT_ENV);
+    await getPlan(PREMIUM_PLAN_CODE, premiumAmount);
     const transaction = await initializeTransaction({
       email: user.email,
-      amount: PREMIUM_PRICE_MINOR,
+      amount: premiumAmount,
       planCode: PREMIUM_PLAN_CODE,
       callbackUrl: `${FRONTEND_URL}/account?upgraded=1&billing=success`,
       metadata: { userId: user.id, product: "premium" },
     });
-    res.json({ url: transaction.authorization_url, reference: transaction.reference });
+    res.json({
+      url: transaction.authorization_url,
+      reference: transaction.reference,
+      amount: premiumAmount,
+      currency: getCurrency(),
+    });
   } catch (err) {
     handlePaystackError(err, res, next);
   }
@@ -486,15 +554,16 @@ router.post("/api-checkout", requireAuth, async (req, res, next) => {
       });
     }
 
-    await getPlan(planCode, getAmountMinor(tier));
+    const amount = getAmountMinor(tier);
+    await getPlan(planCode, amount);
     const transaction = await initializeTransaction({
       email: user.email,
-      amount: getAmountMinor(tier),
+      amount,
       planCode,
       callbackUrl: `${WORKSPACE_URL}?billing=success`,
       metadata: { userId: user.id, product: "api", apiTier: tier },
     });
-    res.json({ url: transaction.authorization_url, reference: transaction.reference });
+    res.json({ url: transaction.authorization_url, reference: transaction.reference, amount, currency: getCurrency() });
   } catch (err) {
     handlePaystackError(err, res, next);
   }
@@ -608,6 +677,9 @@ router.post("/api-usage", async (req, res, next) => {
       overageCharged,
     });
   } catch (err) {
+    if (err.code?.startsWith("PAYSTACK_")) {
+      return res.status(err.statusCode || 503).json({ error: err.message, code: err.code });
+    }
     next(err);
   }
 });

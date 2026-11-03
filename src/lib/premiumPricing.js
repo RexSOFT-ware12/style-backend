@@ -13,15 +13,25 @@
 // CURRENT_PRICE_CENTS below is ONLY used to decide whether to show a
 // "legacy pricing" badge (i.e. is this user's cached price below the
 // current list price) — it does not drive checkout or billing.
-const CURRENT_PRICE_CENTS = 2999; // $29.99 — bump this if the price changes again
+const CURRENT_PRICE_CENTS = 2999; // $29.99 USD fallback for legacy configuration
 const CURRENT_PRICE_USD = CURRENT_PRICE_CENTS / 100;
 
-function isGrandfathered(premiumUnitAmountCents) {
-  return typeof premiumUnitAmountCents === "number" && premiumUnitAmountCents < CURRENT_PRICE_CENTS;
+function currentPriceMinor(currency) {
+  const raw = process.env.PAYSTACK_PREMIUM_AMOUNT;
+  if (raw != null && raw !== "") {
+    const amount = Number(raw);
+    if (Number.isFinite(amount) && amount > 0) return Math.round(amount * 100);
+  }
+  return currency === "USD" ? CURRENT_PRICE_CENTS : null;
+}
+
+function isGrandfathered(premiumUnitAmountMinor, currency = "USD") {
+  const current = currentPriceMinor(currency);
+  return typeof premiumUnitAmountMinor === "number" && current != null && premiumUnitAmountMinor < current;
 }
 
 function centsToUsd(cents) {
   return typeof cents === "number" ? Math.round(cents) / 100 : null;
 }
 
-module.exports = { CURRENT_PRICE_CENTS, CURRENT_PRICE_USD, isGrandfathered, centsToUsd };
+module.exports = { CURRENT_PRICE_CENTS, CURRENT_PRICE_USD, currentPriceMinor, isGrandfathered, centsToUsd };

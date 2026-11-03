@@ -21,6 +21,8 @@ const apiSubscriptionSchema = new Schema(
     paystackEmailToken: { type: Schema.Types.Mixed, required: false, select: false },
     paystackAuthorizationCode: { type: Schema.Types.Mixed, required: false, select: false },
     cancelAtPeriodEnd: { type: Boolean, default: false },
+    billingAmountMinor: { type: Number, required: false },
+    billingCurrency: { type: String, enum: ["GHS", "USD"], required: false },
 
     // Included images for the CURRENT billing period. Copied from
     // lib/apiTiers.js at subscription-create time for starter/growth;

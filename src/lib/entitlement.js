@@ -6,7 +6,7 @@
 // account UI shows) and the requirePremium middleware (what actually blocks
 // requests) can never drift out of sync with each other.
 
-const { CURRENT_PRICE_USD, isGrandfathered, centsToUsd } = require("./premiumPricing");
+const { CURRENT_PRICE_USD, currentPriceMinor, isGrandfathered, centsToUsd } = require("./premiumPricing");
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -19,8 +19,12 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
  *   trialActive: boolean,
  *   trialEndsAt: Date,
  *   trialDaysLeft: number,
- *   currentPremiumPriceUsd: number,
+ *   currentPremiumPriceUsd: number|null,
+ *   currentPremiumPriceAmount: number|null,
+ *   currentPremiumPriceCurrency: string,
  *   premiumPriceUsd: number|null,
+ *   premiumPriceAmount: number|null,
+ *   premiumPriceCurrency: string,
  *   isGrandfathered: boolean,
  * }}
  */
@@ -46,7 +50,12 @@ function getEntitlement(user) {
 
   // What this specific user is actually billed, cached from Paystack on the
   // User doc — null until a subscription webhook has recorded it.
-  const premiumPriceUsd = centsToUsd(user.premiumUnitAmountCents);
+  const premiumPriceCurrency = user.premiumCurrency || "USD";
+  const premiumUnitAmountMinor = user.premiumUnitAmountMinor ?? user.premiumUnitAmountCents;
+  const premiumPriceAmount = centsToUsd(premiumUnitAmountMinor);
+  const premiumPriceUsd = premiumPriceCurrency === "USD" ? premiumPriceAmount : null;
+  const currentCurrency = (process.env.PAYSTACK_CURRENCY || "USD").toUpperCase();
+  const configuredCurrentPriceMinor = currentPriceMinor(currentCurrency);
 
   return {
     hasAccess: trialActive || subscriptionGood,
@@ -57,12 +66,21 @@ function getEntitlement(user) {
     trialDaysLeft,
     // Today's list price for NEW subscribers (what /pricing shows someone
     // who isn't already subscribed).
-    currentPremiumPriceUsd: CURRENT_PRICE_USD,
+    currentPremiumPriceUsd:
+      currentCurrency === "USD"
+        ? configuredCurrentPriceMinor == null
+          ? CURRENT_PRICE_USD
+          : configuredCurrentPriceMinor / 100
+        : null,
+    currentPremiumPriceAmount: configuredCurrentPriceMinor == null ? null : configuredCurrentPriceMinor / 100,
+    currentPremiumPriceCurrency: currentCurrency,
     // What THIS user is actually billed, if known. Null rather than
     // falling back to currentPremiumPriceUsd, so the frontend can tell
     // "we don't know yet" apart from "you pay full price."
     premiumPriceUsd,
-    isGrandfathered: isGrandfathered(user.premiumUnitAmountCents),
+    premiumPriceAmount,
+    premiumPriceCurrency,
+    isGrandfathered: isGrandfathered(premiumUnitAmountMinor, premiumPriceCurrency),
   };
 }
 
