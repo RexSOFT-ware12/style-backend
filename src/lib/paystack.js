@@ -4,7 +4,12 @@ const API_URL = "https://api.paystack.co";
 
 function getSecretKey() {
   const key = process.env.PAYSTACK_SECRET_KEY;
-  if (!key) throw new Error("Payments aren't configured yet. Set PAYSTACK_SECRET_KEY.");
+  if (!key) {
+    const error = new Error("Payments aren't configured yet. Set PAYSTACK_SECRET_KEY.");
+    error.statusCode = 503;
+    error.code = "PAYSTACK_SECRET_MISSING";
+    throw error;
+  }
   return key;
 }
 
@@ -27,10 +32,19 @@ async function request(path, { method = "GET", body } = {}) {
     if (!response.ok || !result.status) {
       const error = new Error(result.message || `Paystack request failed with status ${response.status}.`);
       error.statusCode = response.status;
+      error.code = "PAYSTACK_API_ERROR";
       throw error;
     }
 
     return result.data;
+  } catch (error) {
+    if (error.statusCode) throw error;
+    const networkError = new Error(
+      error.name === "AbortError" ? "Paystack request timed out." : "Could not connect to Paystack."
+    );
+    networkError.statusCode = error.name === "AbortError" ? 504 : 502;
+    networkError.code = "PAYSTACK_NETWORK_ERROR";
+    throw networkError;
   } finally {
     clearTimeout(timeout);
   }
@@ -39,7 +53,10 @@ async function request(path, { method = "GET", body } = {}) {
 function getCurrency() {
   const currency = (process.env.PAYSTACK_CURRENCY || "USD").toUpperCase();
   if (currency !== "USD") {
-    throw new Error("PAYSTACK_CURRENCY must be USD until pricing is configured for another currency.");
+    const error = new Error("PAYSTACK_CURRENCY must be USD until pricing is configured for another currency.");
+    error.statusCode = 503;
+    error.code = "PAYSTACK_CURRENCY_UNSUPPORTED";
+    throw error;
   }
   return currency;
 }
@@ -53,7 +70,12 @@ async function getPlan(planCode, expectedAmount) {
     String(plan.currency).toUpperCase() !== getCurrency() ||
     plan.interval !== "monthly"
   ) {
-    throw new Error(`Paystack plan ${planCode} must be a monthly ${getCurrency()} plan for ${expectedAmount} minor units.`);
+    const error = new Error(
+      `Paystack plan ${planCode} must be a monthly ${getCurrency()} plan for ${expectedAmount} minor units; received ${plan.amount} ${plan.currency} per ${plan.interval}.`
+    );
+    error.statusCode = 503;
+    error.code = "PAYSTACK_PLAN_MISMATCH";
+    throw error;
   }
 
   return plan;

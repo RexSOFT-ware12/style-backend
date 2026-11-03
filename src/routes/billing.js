@@ -63,6 +63,17 @@ function getAmountMinor(tier) {
   return Math.round(getTierConfig(tier).monthlyPriceUsd * 100);
 }
 
+function handlePaystackError(err, res, next) {
+  if (!err.code?.startsWith("PAYSTACK_")) return next(err);
+  console.error("Paystack billing request failed:", err.message);
+  const status = ["PAYSTACK_PLAN_MISMATCH", "PAYSTACK_SECRET_MISSING", "PAYSTACK_CURRENCY_UNSUPPORTED"].includes(err.code)
+    ? 503
+    : err.code === "PAYSTACK_NETWORK_ERROR" && err.statusCode === 504
+      ? 504
+      : 502;
+  res.status(status).json({ error: err.message, code: err.code });
+}
+
 function paymentMethodsUnavailable(_req, res) {
   res.status(410).json({
     error: "Saved-card management is no longer available. Paystack securely collects payment details during checkout.",
@@ -346,7 +357,7 @@ router.get("/status", requireAuth, async (req, res, next) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(getEntitlement(user));
   } catch (err) {
-    next(err);
+    handlePaystackError(err, res, next);
   }
 });
 
@@ -358,8 +369,9 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
     const user = await User.findById(req.user.sub);
     if (!user) return res.status(404).json({ error: "User not found" });
     if (!process.env.PAYSTACK_SECRET_KEY || !PREMIUM_PLAN_CODE) {
-      return res.status(500).json({
+      return res.status(503).json({
         error: "Premium subscriptions aren't configured. Set PAYSTACK_SECRET_KEY and PAYSTACK_PREMIUM_PLAN_CODE.",
+        code: "PAYSTACK_CONFIGURATION_MISSING",
       });
     }
     if (user.subscriptionProvider === "paystack" && ACTIVE_STATES.includes(user.subscriptionStatus)) {
@@ -376,7 +388,7 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
     });
     res.json({ url: transaction.authorization_url, reference: transaction.reference });
   } catch (err) {
-    next(err);
+    handlePaystackError(err, res, next);
   }
 });
 
@@ -448,7 +460,10 @@ router.post("/api-checkout", requireAuth, async (req, res, next) => {
     const user = await User.findById(req.user.sub);
     if (!user) return res.status(404).json({ error: "User not found" });
     if (!process.env.PAYSTACK_SECRET_KEY) {
-      return res.status(500).json({ error: "Payments aren't configured yet. Set PAYSTACK_SECRET_KEY." });
+      return res.status(503).json({
+        error: "API subscriptions aren't configured. Set PAYSTACK_SECRET_KEY.",
+        code: "PAYSTACK_SECRET_MISSING",
+      });
     }
 
     const existing = await ApiSubscription.findOne({ userId: user.id });
@@ -465,7 +480,10 @@ router.post("/api-checkout", requireAuth, async (req, res, next) => {
     const tierConfig = getTierConfig(tier);
     const planCode = process.env[tierConfig.planCodeEnvVar];
     if (!planCode) {
-      return res.status(500).json({ error: `Set ${tierConfig.planCodeEnvVar} to the matching Paystack monthly plan code.` });
+      return res.status(503).json({
+        error: `API subscriptions aren't configured. Set ${tierConfig.planCodeEnvVar} to the matching Paystack monthly plan code.`,
+        code: "PAYSTACK_PLAN_CODE_MISSING",
+      });
     }
 
     await getPlan(planCode, getAmountMinor(tier));
@@ -478,7 +496,7 @@ router.post("/api-checkout", requireAuth, async (req, res, next) => {
     });
     res.json({ url: transaction.authorization_url, reference: transaction.reference });
   } catch (err) {
-    next(err);
+    handlePaystackError(err, res, next);
   }
 });
 
