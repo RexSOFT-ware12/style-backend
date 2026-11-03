@@ -5,7 +5,14 @@ const Taxonomy = require("../models/Taxonomy");
 const { requireAuth } = require("../middleware/auth");
 const { productUpload, designPatternUpload, UPLOAD_DIR, DIGITAL_DIR } = require("../middleware/upload");
 const { processProductImage } = require("../middleware/processImage");
-const { downloadObject, createResumableUploadSession, bucketConfigured, uploadToBucket } = require("../lib/gcs");
+const {
+  cleanOriginalName,
+  createDigitalUploadSignature,
+  MAX_DIGITAL_FILE_SIZE,
+  uploadImage,
+  uploadRawFile,
+  verifyDigitalUpload,
+} = require("../lib/cloudinary");
 const { generateReviews } = require("../lib/reviews");
 const { convertPngToSvg } = require("../lib/svgConvert");
 const { buildImageBundleZip } = require("../lib/zipBundle");
@@ -18,6 +25,11 @@ const os = require("os");
 const path = require("path");
 
 const router = express.Router();
+const digitalUploadRateLimit = createRateLimiter({
+  windowMs: 60_000,
+  max: 30,
+  message: "Too many upload requests. Please wait a moment and try again.",
+});
 
 // Design Patterns are regular Products under the hood (same price/name/
 // description/digitalFile-zip/download flow as everything else) — they're
@@ -36,123 +48,42 @@ function safeFileBase(name) {
     .slice(0, 60);
 }
 
-// Local disk is ephemeral on App Engine — a file written by one request can
-// 404 on the very next one if it lands on a different instance, or once the
-// instance recycles. Every other product image already avoids this by
-// uploading to the configured GCS bucket (see middleware/processImage.js);
-// these do the same thing for a generated Design Pattern SVG / auto-zip,
-// falling back to local /uploads serving only when no bucket is configured.
-
 // Publishes a locally-generated *image* file (the traced SVG) and returns
 // the URL to store on the product's `image`/`heroImages` fields.
-async function publishGeneratedImage(req, localPath, filename) {
-  try {
-    const publicUrl = await uploadToBucket(localPath, filename);
-    if (publicUrl) {
-      fs.unlink(localPath, () => {});
-      return toPublicUrl(req, { publicUrl });
-    }
-  } catch (err) {
-    console.error("GCS upload failed for design-pattern SVG, falling back to local file serving:", err.message);
-  }
-  return toPublicUrl(req, { publicUrl: null, filename });
+async function publishGeneratedImage(localPath) {
+  const asset = await uploadImage(localPath);
+  await fs.promises.unlink(localPath);
+  return asset.secureUrl;
 }
 
 // Publishes a locally-generated *digital file* (the auto-built zip) and
-// returns a `digitalFile.fileName`/`storage` pair in the same shape
-// `parseDigitalFileField` produces, so routes/orders.js's existing
-// gcs/local download logic works on it unmodified.
+// returns metadata in the same shape as the signed browser upload flow.
 async function publishGeneratedDigitalFile(localPath, filename) {
-  try {
-    const publicUrl = await uploadToBucket(localPath, `digital/${filename}`);
-    if (publicUrl) {
-      fs.unlink(localPath, () => {});
-      const objectName = publicUrl.split("/").slice(3).join("/");
-      return { fileName: objectName, storage: "gcs" };
-    }
-  } catch (err) {
-    console.error("GCS upload failed for design-pattern zip, falling back to local file serving:", err.message);
-  }
-  return { fileName: filename, storage: "local" };
+  const digitalFile = await uploadRawFile(localPath, filename);
+  await fs.promises.unlink(localPath);
+  return digitalFile;
 }
 
-// Turns an uploaded multer file into the URL that will actually serve it.
-// If processProductImage successfully uploaded it to a GCS bucket, that
-// real URL (set as file.publicUrl) is used. Otherwise it falls back to this
-// server's own /uploads static route — never a guessed bucket URL for a
-// file that was never actually sent to a bucket (that mismatch was why
-// uploaded images weren't showing up on the storefront).
-function toPublicUrl(req, file) {
-  const apiBase = (process.env.PUBLIC_API_URL || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
-  if (file.publicUrl?.startsWith("gs://")) {
-    const objectName = file.publicUrl.split("/").slice(3).join("/");
-    return `${apiBase}/api/products/assets/${encodeURIComponent(objectName)}`;
-  }
-  if (file.publicUrl) return file.publicUrl;
-  return `${apiBase}/uploads/${file.filename}`;
+function toPublicUrl(file) {
+  if (!file.publicUrl) throw new Error("Image was not uploaded to Cloudinary.");
+  return file.publicUrl;
 }
 
-// Permanent application URL for a private product image. GCS remains private;
-// this endpoint is the controlled reader for the storefront.
-router.get("/assets/:objectName", async (req, res, next) => {
+// Signs each browser upload; the API secret stays on the server.
+router.post("/digital-file/upload-signature", requireAuth, digitalUploadRateLimit, async (req, res, next) => {
   try {
-    const objectName = decodeURIComponent(req.params.objectName);
-    const folder = process.env.STORAGE_FOLDER || "bucket";
-    if (objectName.includes("/") && !objectName.startsWith(`${folder}/`)) {
-      return res.status(404).end();
-    }
-    if (!objectName.startsWith(`${folder}/`)) return res.status(404).end();
-    if (!(await downloadObject(objectName, res))) return res.status(404).end();
-  } catch (err) {
-    next(err);
-  }
-});
-
-// ---------------------------------------------------------------------------
-// POST /api/products/digital-file/resumable-upload (protected — dashboard only)
-// Starts a GCS resumable-upload session. The browser then sends the ZIP
-// directly to GCS in chunks, so the bytes never pass through Express/App
-// Engine's 32MB request-size limit. Unlike a V4 signed URL, this is not a
-// two-hour download/upload URL. The session URI exists only for this upload;
-// the stored product file itself remains private and does not expire.
-// ---------------------------------------------------------------------------
-router.post("/digital-file/resumable-upload", requireAuth, async (req, res, next) => {
-  try {
-    if (!bucketConfigured()) {
-      return res.status(500).json({
-        error: "Direct uploads require GCS to be configured (STORAGE_BUCKET).",
-      });
-    }
-
-    const { originalName, contentType, size } = req.body || {};
+    const { originalName, publicId, size } = req.body || {};
     const totalSize = Number(size);
-
-    if (!originalName || !/\.zip$/i.test(originalName)) {
-      return res.status(400).json({ error: "originalName must be a .zip filename" });
+    if (!Number.isSafeInteger(totalSize) || totalSize <= 0 || totalSize > MAX_DIGITAL_FILE_SIZE) {
+      return res.status(400).json({ error: "ZIP size must be between 1 byte and 200MB." });
     }
-    if (!Number.isSafeInteger(totalSize) || totalSize <= 0 || totalSize > 1000 * 1024 * 1024) {
-      return res.status(400).json({ error: "ZIP size must be between 1 byte and 1000MB" });
+    if (publicId && !/^fabricnow\/downloads\/[A-Za-z0-9_-]{18}\.zip$/.test(publicId)) {
+      return res.status(400).json({ error: "Invalid Cloudinary ZIP upload ID." });
     }
-
-    const destFilename = `digital/${nanoid(14)}.zip`;
-    // IMPORTANT: GCS uses the Origin from the session-initiation request
-    // when deciding whether subsequent 308 resumable-upload responses get
-    // CORS headers. Passing a fixed localhost:3000 origin breaks a dashboard
-    // actually running on localhost:5173 (the common Vite dev origin).
-    const requestOrigin = req.get("Origin") || process.env.DASHBOARD_ORIGIN || undefined;
-
-    const { sessionUri, objectName } = await createResumableUploadSession(
-      destFilename,
-      contentType || "application/zip",
-      totalSize,
-      requestOrigin
-    );
 
     res.json({
       data: {
-        uploadUrl: sessionUri,
-        objectName,
-        originalName,
+        ...createDigitalUploadSignature(originalName, publicId),
         size: totalSize,
       },
     });
@@ -196,36 +127,47 @@ function serialize(product) {
   };
 }
 
-// Builds the digitalFile subdocument from either upload path.
-// `body.digitalFileGcs` arrives as a JSON string (form fields are always
-// strings in multipart bodies) shaped like
-// { objectName, originalName, size }, produced by the resumable-upload flow.
-function parseDigitalFileField(body, multerFile) {
-  if (multerFile) {
+// Builds digital-file metadata only after checking that the uploaded raw
+// asset exists, is authenticated, and matches the declared size.
+async function parseDigitalFileField(body, multerFile, existingProductId) {
+  if (body?.digitalFileGcs) {
+    const error = new Error("Please update the dashboard to upload ZIP files to Cloudinary.");
+    error.status = 400;
+    throw error;
+  }
+
+  if (body?.digitalFileCloudinary) {
+    let meta;
+    try {
+      meta = JSON.parse(body.digitalFileCloudinary);
+    } catch {
+      const error = new Error("Invalid Cloudinary ZIP metadata.");
+      error.status = 400;
+      throw error;
+    }
+
+    const originalName = cleanOriginalName(meta.originalName);
+    const asset = await verifyDigitalUpload(meta.publicId, meta.size);
+    const duplicateQuery = { "digitalFile.fileName": meta.publicId };
+    if (existingProductId) duplicateQuery._id = { $ne: existingProductId };
+    if (await Product.exists(duplicateQuery)) {
+      const error = new Error("This Cloudinary ZIP is already attached to another product.");
+      error.status = 409;
+      throw error;
+    }
     return {
-      fileName: multerFile.filename,
-      originalName: multerFile.originalname,
-      size: multerFile.size,
-      storage: "local",
+      fileName: meta.publicId,
+      originalName,
+      size: asset.bytes,
+      storage: "cloudinary",
       uploadedAt: new Date(),
     };
   }
 
-  if (body?.digitalFileGcs) {
-    let meta;
-    try {
-      meta = JSON.parse(body.digitalFileGcs);
-    } catch {
-      return null;
-    }
-    if (!meta?.objectName) return null;
-    return {
-      fileName: meta.objectName,
-      originalName: meta.originalName || "download.zip",
-      size: Number(meta.size) || 0,
-      storage: "gcs",
-      uploadedAt: new Date(),
-    };
+  if (multerFile) {
+    const digitalFile = await uploadRawFile(multerFile.path, multerFile.originalname);
+    await fs.promises.unlink(multerFile.path);
+    return digitalFile;
   }
 
   return null;
@@ -437,26 +379,19 @@ router.post("/", requireAuth, productUpload, processProductImage, async (req, re
     const digitalFileUpload = req.files?.digitalFile?.[0];
 
     const heroImages = imageFiles.length
-      ? imageFiles.map((f) => toPublicUrl(req, f))
+      ? imageFiles.map(toPublicUrl)
       : body.image
       ? [body.image]
       : ["/images/NoImage.jpg"];
     const image = heroImages[0];
     const fabricImage = fabricImageFile
-      ? toPublicUrl(req, fabricImageFile)
+      ? toPublicUrl(fabricImageFile)
       : body.fabricImage || "";
     const images = galleryFiles.length
-      ? galleryFiles.map((f) => toPublicUrl(req, f))
+      ? galleryFiles.map(toPublicUrl)
       : [];
 
-    // Two ways a digital file can arrive:
-    //  1. digitalFileGcs — JSON metadata for a file already PUT directly to
-    //     GCS via the /digital-file/resumable-upload flow (used for large files,
-    //     since it never touches this request handler's body size).
-    //  2. digitalFileUpload — a normal multer-handled file in this request
-    //     (kept for small files / backward compatibility; still capped by
-    //     App Engine's 32MB request limit).
-    const digitalFile = parseDigitalFileField(body, digitalFileUpload);
+    const digitalFile = await parseDigitalFileField(body, digitalFileUpload);
 
     const product = await Product.create({
       name: body.name,
@@ -510,22 +445,22 @@ router.put("/:id", requireAuth, productUpload, processProductImage, async (req, 
     const existingHeroImages =
       existing.heroImages && existing.heroImages.length ? existing.heroImages : [existing.image];
     const heroImages = imageFiles.length
-      ? imageFiles.map((f) => toPublicUrl(req, f))
+      ? imageFiles.map(toPublicUrl)
       : body.image !== undefined
       ? [body.image]
       : existingHeroImages;
     const image = heroImages[0];
     const fabricImage = fabricImageFile
-      ? toPublicUrl(req, fabricImageFile)
+      ? toPublicUrl(fabricImageFile)
       : body.fabricImage ?? existing.fabricImage;
     // Only replace the gallery when new files are actually sent — otherwise
     // keep whatever gallery shots already exist on the product.
     const images = galleryFiles.length
-      ? galleryFiles.map((f) => toPublicUrl(req, f))
+      ? galleryFiles.map(toPublicUrl)
       : existing.images;
 
     let digitalFile = existing.digitalFile || null;
-    const parsed = parseDigitalFileField(body, digitalFileUpload);
+    const parsed = await parseDigitalFileField(body, digitalFileUpload, existing._id);
     if (parsed) {
       digitalFile = parsed;
     } else if (body.clearDigitalFile === "true" || body.clearDigitalFile === true) {
@@ -629,7 +564,7 @@ router.post(
 
 // POST /api/products/design-patterns (protected — dashboard only)
 // multipart/form-data: name, price, description, image (PNG), digitalFile
-// (.zip) or digitalFileGcs (JSON metadata from the resumable-upload flow).
+// (.zip) or digitalFileCloudinary (JSON metadata from the signed upload flow).
 router.post(
   "/design-patterns",
   requireAuth,
@@ -643,13 +578,13 @@ router.post(
 
       const imageFile = req.files?.image?.[0];
       const digitalFileUpload = req.files?.digitalFile?.[0];
-      let digitalFile = parseDigitalFileField(body, digitalFileUpload);
+      let digitalFile = await parseDigitalFileField(body, digitalFileUpload);
 
       let image = body.image || "/images/NoImage.jpg";
       if (imageFile) {
         // Trace the uploaded PNG into an SVG (deterministic bitmap tracing,
         // see lib/svgConvert.js — no AI involved).
-        const { filename: svgFilename, filePath: svgFilePath } = await convertPngToSvg(
+        const { filePath: svgFilePath } = await convertPngToSvg(
           imageFile.path,
           UPLOAD_DIR
         );
@@ -662,7 +597,7 @@ router.post(
         if (!digitalFile) {
           const baseName = safeFileBase(body.name) || "design-pattern";
           const rasterExt = path.extname(imageFile.originalname) || ".png";
-          const { filename: zipFilename, filePath: zipFilePath, size } = await buildImageBundleZip(
+          const { filePath: zipFilePath } = await buildImageBundleZip(
             {
               rasterPath: imageFile.path,
               rasterName: `${baseName}${rasterExt}`,
@@ -671,20 +606,12 @@ router.post(
             },
             DIGITAL_DIR
           );
-          const published = await publishGeneratedDigitalFile(zipFilePath, zipFilename);
-          digitalFile = {
-            ...published,
-            originalName: `${baseName}.zip`,
-            size,
-            uploadedAt: new Date(),
-          };
+          digitalFile = await publishGeneratedDigitalFile(zipFilePath, `${baseName}.zip`);
         }
 
         // Now that the zip (if any) has what it needs, publish the SVG
-        // itself — uploads to the configured GCS bucket when available,
-        // dropping the local copy since App Engine's local disk is
-        // ephemeral (see publishGeneratedImage above).
-        image = await publishGeneratedImage(req, svgFilePath, svgFilename);
+        // itself to Cloudinary before dropping the local copy.
+        image = await publishGeneratedImage(svgFilePath);
 
         // The raw upload was only needed to produce the SVG and the zip —
         // don't keep a standalone copy of it around.
@@ -735,10 +662,10 @@ router.put(
 
       let image = existing.image;
       let digitalFile = existing.digitalFile || null;
-      const parsed = parseDigitalFileField(body, digitalFileUpload);
+      const parsed = await parseDigitalFileField(body, digitalFileUpload, existing._id);
 
       if (imageFile) {
-        const { filename: svgFilename, filePath: svgFilePath } = await convertPngToSvg(
+        const { filePath: svgFilePath } = await convertPngToSvg(
           imageFile.path,
           UPLOAD_DIR
         );
@@ -747,14 +674,14 @@ router.put(
           // An explicit new .zip was uploaded alongside the new image —
           // that takes precedence over auto-bundling.
           digitalFile = parsed;
-        } else if (!digitalFileUpload && !body.digitalFileGcs) {
+        } else if (!digitalFileUpload && !body.digitalFileCloudinary) {
           // No new .zip was provided for this edit — re-bundle the
           // (possibly replaced) raster + freshly-traced SVG automatically,
           // same as on create. Has to happen before the SVG is
           // published/deleted below, since it still needs that local file.
           const baseName = safeFileBase(body.name ?? existing.name) || "design-pattern";
           const rasterExt = path.extname(imageFile.originalname) || ".png";
-          const { filename: zipFilename, filePath: zipFilePath, size } = await buildImageBundleZip(
+          const { filePath: zipFilePath } = await buildImageBundleZip(
             {
               rasterPath: imageFile.path,
               rasterName: `${baseName}${rasterExt}`,
@@ -763,16 +690,10 @@ router.put(
             },
             DIGITAL_DIR
           );
-          const published = await publishGeneratedDigitalFile(zipFilePath, zipFilename);
-          digitalFile = {
-            ...published,
-            originalName: `${baseName}.zip`,
-            size,
-            uploadedAt: new Date(),
-          };
+          digitalFile = await publishGeneratedDigitalFile(zipFilePath, `${baseName}.zip`);
         }
 
-        image = await publishGeneratedImage(req, svgFilePath, svgFilename);
+        image = await publishGeneratedImage(svgFilePath);
         fs.unlink(imageFile.path, () => {});
       } else if (parsed) {
         digitalFile = parsed;

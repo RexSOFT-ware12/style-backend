@@ -2,12 +2,11 @@ const { Schema, model } = require("mongoose");
 
 const digitalFileSchema = new Schema(
   {
-    fileName: String, // internal storage filename/GCS object name — never sent to the storefront
+    fileName: String, // internal storage filename or Cloudinary public ID — never sent to the storefront
     originalName: String,
     size: Number,
-    // "gcs" for files uploaded via the direct GCS upload flow, "local" (or
-    // unset, for older records) for files sitting on local App Engine disk.
-    storage: { type: String, enum: ["gcs", "local"], default: "local" },
+    // Keep legacy values readable so old records can request re-upload.
+    storage: { type: String, enum: ["cloudinary", "gcs", "local"], default: "local" },
     uploadedAt: { type: Date, default: Date.now },
   },
   { _id: false }

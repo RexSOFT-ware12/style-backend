@@ -2,8 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const path = require("path");
-const fs = require("fs");
 
 const { connectDB } = require("./db");
 const { initSecrets } = require("./lib/secretsStore");
@@ -29,25 +27,6 @@ const patternLibraryRouter = require("./routes/patternLibrary");
 const bodyMeasurementsRouter = require("./routes/bodyMeasurements");
 const contactRouter = require("./routes/contact");
 const { verifyWebhookSignature } = require("./lib/paystack");
-
-function resolveUploadDir() {
-  const candidates = [
-    path.resolve(process.cwd(), "uploads"),
-    path.resolve(__dirname, "..", "uploads"),
-    path.resolve("/tmp", "fabricnow-uploads"),
-  ];
-
-  for (const candidate of candidates) {
-    try {
-      fs.mkdirSync(candidate, { recursive: true });
-      return candidate;
-    } catch (error) {
-      if (error.code !== "ENOENT") throw error;
-    }
-  }
-
-  throw new Error("Could not create a writable upload directory.");
-}
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -101,14 +80,6 @@ app.use("/api/lookbooks", express.json({ limit: "20mb" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded product images when using local filesystem uploads.
-// If this app is configured for Google Cloud Storage, image URLs are generated
-// directly to the bucket path instead of serving files from /uploads.
-const UPLOAD_DIR = resolveUploadDir();
-if (!process.env.STORAGE_BUCKET && !process.env.GCS_BUCKET_NAME) {
-  app.use("/uploads", express.static(UPLOAD_DIR));
-}
-
 app.get("/", (req, res) => {
   res.json({
     name: "FabricNow API",
@@ -127,6 +98,7 @@ app.get("/", (req, res) => {
       "POST   /api/products        (auth required)",
       "PUT    /api/products/:id    (auth required)",
       "DELETE /api/products/:id    (auth required)",
+      "POST   /api/products/digital-file/upload-signature (auth required)",
       "POST   /api/auth/signup",
       "POST   /api/auth/signin",
       "GET    /api/auth/me         (auth required)",

@@ -10,6 +10,8 @@ const TechPack=require('../models/TechPack');
 const ProductionItem=require('../models/ProductionItem');
 const QualityAudit=require('../models/QualityAudit');
 const {upload}=require('../middleware/upload');
+const {uploadImage}=require('../lib/cloudinary');
+const fs=require('fs');
 const {createRateLimiter}=require('../middleware/rateLimit');
 const {askFabricFromImage,makeFabricSwatch}=require('../lib/patternDesign');
 const fabricAiLimit=createRateLimiter({windowMs:60000,max:12,message:'You are analysing fabrics quickly. Please wait a minute and try again.'});
@@ -33,7 +35,12 @@ router.get('/projects',async(req,res,next)=>{try{const q={companyId:cid(req)};if
 router.post('/projects',requirePermission('products:write'),async(req,res,next)=>{try{const p=await WorkspaceProject.create({...req.body,userId:uid(req),companyId:cid(req)});res.status(201).json({project:p})}catch(e){next(e)}});
 router.post('/projects/:id/source-images',requirePermission('products:write'),upload.array('images',6),async(req,res,next)=>{try{
   const p=await WorkspaceProject.findOne({_id:req.params.id,companyId:cid(req)});if(!p)return res.status(404).json({error:'Project not found'});if(!req.files?.length)return res.status(400).json({error:'Add at least one image.'});
-  const assets=await WorkspaceAsset.insertMany(req.files.map(f=>({userId:uid(req),companyId:cid(req),projectId:p._id,name:f.originalname,type:'image',url:`/uploads/${f.filename}`,mime:f.mimetype,size:f.size,status:'ready',tags:['source','garment']})));
+  const uploaded=await Promise.all(req.files.map(async f=>{
+    const stored=await uploadImage(f.path);
+    await fs.promises.unlink(f.path);
+    return {userId:uid(req),companyId:cid(req),projectId:p._id,name:f.originalname,type:'image',url:stored.secureUrl,mime:f.mimetype,size:f.size,status:'ready',tags:['source','garment']};
+  }));
+  const assets=await WorkspaceAsset.insertMany(uploaded);
   const urls=assets.map(a=>a.url);p.sourceImages=[...(p.sourceImages||[]),...urls];p.assets=[...(p.assets||[]),...assets.map(a=>({name:a.name,type:a.type,url:a.url,mime:a.mime,size:a.size,status:'approved',tags:a.tags,metadata:{assetId:a.id}}))];await p.save();res.status(201).json({project:p,assets});
 }catch(e){next(e)}});
 router.get('/projects/:id',async(req,res,next)=>{try{const p=await WorkspaceProject.findOne({_id:req.params.id,companyId:cid(req)});if(!p)return res.status(404).json({error:'Project not found'});res.json({project:p})}catch(e){next(e)}});

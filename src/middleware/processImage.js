@@ -1,7 +1,7 @@
 const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
-const { uploadToBucket } = require("../lib/gcs");
+const { uploadImage } = require("../lib/cloudinary");
 
 // Every product photo — no matter what the seller uploads (a tiny phone
 // screenshot, a huge DSLR photo, portrait, landscape, PNG, WEBP...) — gets
@@ -99,24 +99,14 @@ async function normalizeImageFile(file) {
   file.mimetype = noCrop ? "image/png" : "image/jpeg";
   file.size = stats.size;
 
-  // If a storage bucket is configured, actually upload the normalized file
+  // Persist normalized images remotely; local disk is only temporary storage.
   // there and remember the real public URL on the file object — this is
   // what the route handler uses instead of guessing a bucket URL for a
   // file that was never actually sent to the bucket.
-  try {
-    const publicUrl = await uploadToBucket(outputPath, outputFilename);
-    if (publicUrl) {
-      file.publicUrl = publicUrl;
-      // Local disk (especially on App Engine) is ephemeral — once the
-      // bucket has it, drop the local copy.
-      fs.unlink(outputPath, () => {});
-    }
-  } catch (err) {
-    // Bucket upload failed (bad/missing credentials, bucket doesn't exist,
-    // network issue, etc.) — keep serving the local copy via /uploads
-    // rather than losing the image entirely.
-    console.error("GCS upload failed, falling back to local file serving:", err.message);
-  }
+  const asset = await uploadImage(outputPath);
+  file.publicUrl = asset.secureUrl;
+  file.cloudinaryPublicId = asset.publicId;
+  await fs.promises.unlink(outputPath);
 }
 
 // Express middleware: normalizes every image file on this request —
@@ -135,12 +125,7 @@ function processProductImage(req, res, next) {
 
   Promise.all(jobs.map((file) => normalizeImageFile(file)))
     .then(() => next())
-    .catch((err) => {
-      // Don't fail product creation/editing over an image-processing hiccup —
-      // fall back to serving whichever files the seller actually sent.
-      console.error("Product image processing failed, keeping original upload(s):", err.message);
-      next();
-    });
+    .catch(next);
 }
 
 module.exports = { processProductImage, normalizeImageFile, PRODUCT_IMAGE_SIZE, JPEG_QUALITY };

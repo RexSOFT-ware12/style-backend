@@ -12,7 +12,7 @@ Main Node.js/Express API for the FabricNow company platform.
 - API usage and entitlement tracking
 - Garment/style APIs
 - Fabric Now pattern-generation proxy
-- Google Cloud Storage integration
+- Cloudinary image and private ZIP storage
 
 The React workspace is intentionally a separate project. Configure its Vite `VITE_API_URL` to this API.
 
@@ -27,6 +27,13 @@ npm start
 Run the Node API and Fabric Now Python worker as separate services. The Node API is the public service; the Python worker is protected by `FABRIC_NOW_INTERNAL_SECRET`.
 
 The authenticated workspace copilot (`POST /api/assistant/workspace`) uses OpenAI. Set `OPENAI_API_KEY` on the Node backend; `OPENAI_ASSISTANT_MODEL` is optional and defaults to `gpt-4o-mini`. Other Gemini-powered tools remain unchanged.
+
+Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`
+on the backend deployment. Product/workspace images and private product ZIPs
+are stored in Cloudinary; ZIP uploads are limited to 200 MB and downloads use
+short-lived URLs after the backend verifies the paid order. Confirm the
+Cloudinary account permits raw uploads at least 200 MB. Existing GCS-backed
+or local-disk images and ZIPs must be re-uploaded.
 
 ## Paystack billing setup
 Create monthly GHS plans in the Paystack dashboard with these amounts and set their plan codes and matching `*_AMOUNT` values in the server environment:

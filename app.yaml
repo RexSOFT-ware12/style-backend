@@ -7,19 +7,13 @@ entrypoint: node src/server.js
 # includes:
 #   - secrets.yaml
 
-# min_instances keeps one instance warm at all times. Without this, App
-# Engine standard scales down to zero when idle, and the next request has
-# to cold-boot a fresh Node instance before it can even talk to GCS — which
-# was intermittently blowing past Next.js's ~7s image-optimizer timeout
-# ("upstream image response timed out") on the storefront.
+# Keep one instance warm to avoid cold-start latency on the storefront.
 automatic_scaling:
   min_instances: 1
 
 env_variables:
   NODE_ENV: "production"
   PUBLIC_API_URL: "https://backend.fabricnow.pro"
-  STORAGE_BUCKET: "fabric-now"
-  STORAGE_FOLDER: "FabricNow"
   BG_MODEL_DIR: "/tmp/bg-models"
   PINTEREST_REDIRECT_URI: "https://backend.fabricnow.pro/api/companies/pinterest/oauth/callback"
   PINTEREST_FRONTEND_URL: "https://workspace.fabricnow.pro"

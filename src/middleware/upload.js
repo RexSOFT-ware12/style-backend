@@ -23,7 +23,7 @@ function resolveUploadDir() {
 }
 
 const UPLOAD_DIR = resolveUploadDir();
-const MAX_UPLOAD_SIZE = 1000 * 1024 * 1024;
+const MAX_UPLOAD_SIZE = 200 * 1024 * 1024;
 
 // Digital product assets (the .zip bundles containing .zprj + pattern files)
 // are stored separately from images, and are NEVER served statically —
@@ -68,7 +68,7 @@ function digitalFileFilter(req, file, cb) {
 const uploadDigital = multer({
   storage: digitalStorage,
   fileFilter: digitalFileFilter,
-  limits: { fileSize: MAX_UPLOAD_SIZE }, // up to 1000MB — these bundles can be large
+  limits: { fileSize: MAX_UPLOAD_SIZE }, // ZIP files are capped at 200MB
 });
 
 // Combined uploader for the "create/edit product" form:

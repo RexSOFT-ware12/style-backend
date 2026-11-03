@@ -24,7 +24,9 @@ Main Node backend:
 - `WORKSPACE_URL`
 - `FABRIC_NOW_SERVICE_URL`
 - `FABRIC_NOW_INTERNAL_SECRET`
-- `STORAGE_BUCKET` / `GCS_BUCKET_NAME`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET` (server-side only; do not expose it in the dashboard)
 
 Python worker:
 - `OPENAI_API_KEY`
@@ -35,3 +37,10 @@ Python worker:
 Google OAuth:
 - Add the deployed workspace origin to the Google OAuth client configuration.
 - Set the same client ID in the Node `GOOGLE_CLIENT_ID` environment variable.
+
+Cloudinary stores product and workspace images plus authenticated ZIP downloads.
+ZIPs are limited to 200 MB and are delivered through short-lived links only
+after the existing order ownership and payment checks. Existing GCS and
+local-disk assets are not migrated automatically; re-upload product and
+workspace images and ZIP files.
+Confirm the Cloudinary plan allows raw uploads of at least 200 MB.

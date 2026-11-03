@@ -34,10 +34,12 @@ application and deploy the Python worker as an internal Cloud Run service.
 Set `FABRIC_NOW_SERVICE_URL` to the worker's internal URL and protect it with
 `FABRIC_NOW_INTERNAL_SECRET`.
 
-Google Cloud Storage remains the storage target for the existing Node-side
-assets. The worker's job directory is ephemeral in this first merge; for
-multi-instance production, put completed worker outputs in GCS as the next
-storage hardening step.
+Cloudinary stores persistent product and workspace images and authenticated
+product ZIP downloads. ZIP downloads remain behind the order ownership and
+payment checks, which issue a short-lived Cloudinary download URL. Existing
+GCS-backed and local-disk images and ZIPs must be re-uploaded; they are not
+migrated automatically. The worker's job directory remains ephemeral in this
+deployment.
 
 ## Fashion OS layer (2026-10)
 

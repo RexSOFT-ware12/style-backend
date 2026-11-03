@@ -4,7 +4,7 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const { requireAuth } = require("../middleware/auth");
 const { DIGITAL_DIR } = require("../middleware/upload");
-const { streamObject } = require("../lib/gcs");
+const { privateDownloadUrl } = require("../lib/cloudinary");
 const { convertUsdToPaystackMinor, getCurrency, initializeTransaction, verifyTransaction } = require("../lib/paystack");
 
 const router = express.Router();
@@ -192,16 +192,17 @@ router.get("/:orderId/download/:productId", requireAuth, async (req, res, next) 
 
     const downloadName = product.digitalFile.originalName || `${product.name}.zip`;
 
-    // Files uploaded through the direct GCS upload flow live in GCS, not on
-    // this instance's local disk (which is ephemeral on App Engine anyway).
-    if (product.digitalFile.storage === "gcs") {
-      const found = await streamObject(product.digitalFile.fileName, res, downloadName);
-      if (!found) return res.status(404).json({ error: "Digital file is missing from storage" });
-      return;
+    if (product.digitalFile.storage === "cloudinary") {
+      return res.redirect(privateDownloadUrl(product.digitalFile.fileName));
     }
 
-    // Backward compatibility: older products whose .zip was saved to local
-    // disk via multer before this endpoint supported direct GCS uploads.
+    if (product.digitalFile.storage === "gcs") {
+      return res.status(410).json({
+        error: "This download must be re-uploaded to Cloudinary before it can be delivered.",
+      });
+    }
+
+    // Keep serving older files still present on this instance's local disk.
     const filePath = path.join(DIGITAL_DIR, product.digitalFile.fileName);
     res.download(filePath, downloadName, (err) => {
       if (err && !res.headersSent) {
