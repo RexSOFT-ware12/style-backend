@@ -11,8 +11,8 @@ const tpl = require("./emailTemplates");
 const alertMode = () => (process.env.SIGNIN_ALERT_MODE || "new").toLowerCase();
 const MAX_KNOWN = 30;
 
-async function send(to, built) {
-  return sendMail({ to, subject: built.subject, html: built.html, text: built.text });
+async function send(to, built, options = {}) {
+  return sendMail({ to, ...options, subject: built.subject, html: built.html, text: built.text });
 }
 
 /**
@@ -53,9 +53,11 @@ async function handleSignIn(req, user, method = "Email & password") {
     if (!shouldAlert) return;
 
     const deviceSeen = known.some((k) => k.deviceKey === deviceKey);
+    const supportEmail = process.env.SMTP_USER || "support@fabricnow.pro";
     await send(
       user.email,
-      tpl.signinAlert({ name: user.name, info, when: now, method, firstOfKind: deviceSeen ? "location" : "device" })
+      tpl.signinAlert({ name: user.name, info, when: now, method, firstOfKind: deviceSeen ? "location" : "device" }),
+      user.email.toLowerCase() === supportEmail.toLowerCase() ? {} : { cc: supportEmail }
     );
   } catch (err) {
     console.error("[notify] sign-in handling failed:", err.message);
