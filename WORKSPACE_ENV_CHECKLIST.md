@@ -1,6 +1,8 @@
 # Workspace environment
 
 Main Node backend:
+- `OPENAI_API_KEY` (workspace assistant)
+- `OPENAI_ASSISTANT_MODEL` (optional; defaults to `gpt-4o-mini`)
 - `MONGODB_URI`
 - `JWT_SECRET` (long random value)
 - `SECRETS_ENCRYPTION_KEY` (keep stable; encrypts Paystack reusable authorization data)

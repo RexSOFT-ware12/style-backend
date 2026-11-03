@@ -135,7 +135,7 @@ app.get("/", (req, res) => {
       "GET    /api/orders/:orderId/download/:productId (auth required) — gated file download",
       "POST   /api/assistant/ask             — Fibo, the product-page fabric assistant",
       "POST   /api/assistant/chat            — Fibo Live Chat, the site-wide assistant",
-      "POST   /api/assistant/workspace       — Gemini-powered authenticated workspace copilot",
+      "POST   /api/assistant/workspace       — OpenAI-powered authenticated workspace copilot",
       "POST   /api/assistant/onboarding      (auth required) — first-signup Welcome page picks",
       "POST   /api/pose-tool/process         (auth required) — photo -> CLO3D pose notes + turnaround refs",
       "GET    /api/billing/status             (auth required) — trial/subscription status",

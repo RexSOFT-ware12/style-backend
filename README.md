@@ -26,6 +26,8 @@ npm start
 ## Production
 Run the Node API and Fabric Now Python worker as separate services. The Node API is the public service; the Python worker is protected by `FABRIC_NOW_INTERNAL_SECRET`.
 
+The authenticated workspace copilot (`POST /api/assistant/workspace`) uses OpenAI. Set `OPENAI_API_KEY` on the Node backend; `OPENAI_ASSISTANT_MODEL` is optional and defaults to `gpt-4o-mini`. Other Gemini-powered tools remain unchanged.
+
 ## Paystack billing setup
 Create monthly GHS plans in the Paystack dashboard with these amounts and set their plan codes and matching `*_AMOUNT` values in the server environment:
 

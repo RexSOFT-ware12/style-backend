@@ -11,8 +11,11 @@ const PROVIDER_GROUPS = [
   {
     id: "openai",
     label: "OpenAI",
-    description: "Used for garment part segmentation in the Garment Tool.",
-    fields: [{ name: "OPENAI_API_KEY", label: "API key", secret: true, sharedWithGarmentService: true }],
+    description: "Used by the workspace assistant and garment part segmentation.",
+    fields: [
+      { name: "OPENAI_API_KEY", label: "API key", secret: true, sharedWithGarmentService: true },
+      { name: "OPENAI_ASSISTANT_MODEL", label: "Workspace assistant model", secret: false, placeholder: "gpt-4o-mini" },
+    ],
   },
   {
     id: "anthropic",
