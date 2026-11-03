@@ -9,7 +9,7 @@
 //   API Growth     $2,900/mo — 250 processed images/mo included
 //   API Enterprise custom, ~$9,000/mo reference point — negotiated volume
 //     (e.g. ~10,000 images/mo), set by hand per customer
-//     (see scripts/setup-api-billing.js and the "enterprise" notes below)
+//     (set up the self-serve plans in Paystack; see the environment checklist)
 //
 // Overage (same per-unit rate regardless of tier, once the included quota
 // for the current billing period is used up):
@@ -19,7 +19,7 @@
 //          kept at the same ~40% ratio to the segmented rate as before
 //
 // Quota is a *soft* cap: going over it doesn't block the call, it just
-// starts getting billed as metered overage via Stripe. If you'd rather
+// starts getting billed as a Paystack authorization charge. If you'd rather
 // hard-block at the quota instead of billing past it, that's a one-line
 // change in middleware/requireApiAccess.js (garment-service) — flag it
 // there rather than here.
@@ -30,28 +30,26 @@ const API_TIERS = {
     label: "API Starter",
     monthlyPriceUsd: 80,
     quota: 3,
-    // Stripe Price id for the flat monthly base fee. Required in prod.
-    basePriceEnvVar: "STRIPE_API_STARTER_PRICE_ID",
+    planCodeEnvVar: "PAYSTACK_API_STARTER_PLAN_CODE",
   },
   growth: {
     id: "growth",
     label: "API Growth",
     monthlyPriceUsd: 2900,
     quota: 250,
-    basePriceEnvVar: "STRIPE_API_GROWTH_PRICE_ID",
+    planCodeEnvVar: "PAYSTACK_API_GROWTH_PLAN_CODE",
   },
   // No self-serve Checkout for this one — see /api/billing/api-checkout,
   // which explicitly rejects "enterprise". An admin creates the
-  // ApiSubscription doc by hand (or via a small internal script) with a
-  // negotiated `quota` and, if the deal includes it, negotiated Stripe
-  // price ids for base/overage. Kept here mainly so tier labels/validation
+  // ApiSubscription doc by hand with a negotiated `quota` and billing terms.
+  // Kept here mainly so tier labels/validation
   // have one shared list.
   enterprise: {
     id: "enterprise",
     label: "API Enterprise",
     monthlyPriceUsd: null,
     quota: null,
-    basePriceEnvVar: null,
+    planCodeEnvVar: null,
     // Not billed automatically — every enterprise deal is negotiated and
     // set by hand (see notes above). Kept purely as a starting reference
     // point for sales conversations at ~10,000 images/mo.
@@ -60,20 +58,19 @@ const API_TIERS = {
   },
 };
 
-// Overage Stripe Price ids are shared across starter/growth (same $/image
-// regardless of tier), so unlike the base price they aren't per-tier.
+// Paystack authorization charges are shared across starter/growth (same
+// per-image rate regardless of tier), so unlike the monthly plan they aren't
+// per-tier.
 const OVERAGE = {
   segmented: {
     label: "segmented (background removal + part tracing)",
     unitUsd: 49.0,
-    priceEnvVar: "STRIPE_API_OVERAGE_SEGMENTED_PRICE_ID",
-    meterEventName: "garment_image_segmented",
+    amountMinor: 4900,
   },
   bgOnly: {
     label: "background-removal only",
     unitUsd: 20.0,
-    priceEnvVar: "STRIPE_API_OVERAGE_BGONLY_PRICE_ID",
-    meterEventName: "garment_image_bg_removed",
+    amountMinor: 2000,
   },
 };
 

@@ -32,15 +32,20 @@ function getEntitlement(user) {
     ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now) / MS_PER_DAY))
     : 0;
 
-  // "Premium" only counts if Stripe also currently agrees the subscription
-  // is in good standing — a canceled/past_due subscription downgrades
-  // access even if `plan` hasn't been flipped back to "free" yet.
-  const subscriptionGood = user.plan === "premium" && ["active", "trialing"].includes(user.subscriptionStatus);
+  // Only Paystack-backed subscriptions grant paid access. Scheduled
+  // cancellations retain access through the already-paid period.
+  const paidThroughCancellation =
+    user.subscriptionCancelAtPeriodEnd &&
+    user.subscriptionStatus === "canceled" &&
+    user.subscriptionCurrentPeriodEnd &&
+    new Date(user.subscriptionCurrentPeriodEnd).getTime() > now;
+  const subscriptionGood =
+    user.subscriptionProvider === "paystack" &&
+    user.plan === "premium" &&
+    (["active", "trialing"].includes(user.subscriptionStatus) || paidThroughCancellation);
 
-  // What this specific user is actually billed, cached from Stripe on the
-  // User doc (see models/User.js) — null until the webhook has stamped it
-  // at least once (e.g. a user who has never subscribed, or a pre-existing
-  // subscriber before backfill-premium-price.js has run for them).
+  // What this specific user is actually billed, cached from Paystack on the
+  // User doc — null until a subscription webhook has recorded it.
   const premiumPriceUsd = centsToUsd(user.premiumUnitAmountCents);
 
   return {

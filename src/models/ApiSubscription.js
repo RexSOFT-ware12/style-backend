@@ -3,34 +3,24 @@ const { Schema, model } = require("mongoose");
 // One per user (unique userId) — separate from the $19.99-29.99/mo consumer
 // "Premium" plan tracked on User itself (plan/subscriptionStatus/trialEndsAt
 // there). A user CAN hold both: a Premium sub for the dashboard tools and an
-// ApiSubscription for programmatic access — they're billed as two separate
-// Stripe subscriptions.
+// ApiSubscription for programmatic access — they're billed separately.
 const apiSubscriptionSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true },
     tier: { type: String, enum: ["starter", "growth", "enterprise"], required: true },
 
-    // Mirrors Stripe's subscription status vocabulary, same convention as
-    // User.subscriptionStatus — copied verbatim from webhook payloads.
+    // Mirrors the billing provider status, copied from Paystack events.
     status: {
       type: String,
       enum: ["none", "active", "trialing", "past_due", "canceled", "unpaid", "incomplete", "incomplete_expired"],
       default: "none",
     },
 
-    stripeCustomerId: { type: String, required: false },
-    stripeSubscriptionId: { type: String, required: false },
-    // Subscription item ids for the three line items on the Stripe
-    // subscription: the flat monthly base fee, and the two metered overage
-    // items (segmented / bg-only). Populated from the webhook once Stripe
-    // confirms the subscription; enterprise deals with no self-serve
-    // Checkout may have these set by hand, or left blank if overage isn't
-    // part of that negotiated deal.
-    stripeSubscriptionItemIds: {
-      base: { type: String, required: false },
-      overageSegmented: { type: String, required: false },
-      overageBgOnly: { type: String, required: false },
-    },
+    paystackCustomerCode: { type: String, required: false },
+    paystackSubscriptionCode: { type: String, required: false },
+    paystackEmailToken: { type: Schema.Types.Mixed, required: false, select: false },
+    paystackAuthorizationCode: { type: Schema.Types.Mixed, required: false, select: false },
+    cancelAtPeriodEnd: { type: Boolean, default: false },
 
     // Included images for the CURRENT billing period. Copied from
     // lib/apiTiers.js at subscription-create time for starter/growth;
@@ -39,20 +29,18 @@ const apiSubscriptionSchema = new Schema(
     // billing at all).
     quota: { type: Number, required: false, default: null },
 
-    // Stripe's `current_period_start/end` now live on the subscription
-    // ITEM, not the subscription itself (Stripe API 2025-03-31.basil
-    // removed the subscription-level fields) — these are copied from the
-    // base line item's period on every relevant webhook. Used to detect
+    // Copied from Paystack subscription and invoice events; used to detect
     // when to reset `usage` below for a new billing period.
     currentPeriodStart: { type: Date, required: false },
     currentPeriodEnd: { type: Date, required: false },
 
-    // How this subscription is paid for. "stripe" = normal self-serve
-    // Checkout (renewals + period rollover arrive via webhook). "manual" =
+    // How this subscription is paid for. "paystack" = recurring self-serve
+    // billing; "manual" =
     // an admin marked it paid because the customer paid us directly; there
-    // is no Stripe subscription behind it, so the admin records each
+    // is no Paystack subscription behind it, so the admin records each
     // renewal from the dashboard (see routes/admin.js).
-    source: { type: String, enum: ["stripe", "manual"], default: "stripe" },
+    // "stripe" is retained only to recognize and deny legacy records.
+    source: { type: String, enum: ["paystack", "manual", "stripe"], required: false },
     // Audit info for manual payments (last recorded payment).
     manualPayment: {
       amountUsd: { type: Number, required: false },
@@ -69,11 +57,8 @@ const apiSubscriptionSchema = new Schema(
     rolloverCredits: { type: Number, default: 0, min: 0 },
 
     // This-period usage counters, reset to 0 whenever a webhook shows the
-    // period has rolled over. These are OUR bookkeeping for "has this key
-    // used its included quota yet" — Stripe's own meters are the source of
-    // truth for what actually gets invoiced, these just decide the instant
-    // a given call crosses from "included" to "overage" (see
-    // lib/stripeMeters.js).
+    // period has rolled over. Crossing the allowance triggers a Paystack
+    // authorization charge.
     usage: {
       segmentedCount: { type: Number, default: 0 },
       bgOnlyCount: { type: Number, default: 0 },

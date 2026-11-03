@@ -19,7 +19,7 @@ KEY PAGES & WHAT THEY'RE FOR
   style/price, description, reviews, and the "Fibo" per-product fabric
   assistant chat widget).
 - /cart — shopping cart before checkout.
-- /checkout and /checkout/success — payment (via Stripe) and order
+- /checkout and /checkout/success — payment (via Paystack) and order
   confirmation; downloads unlock immediately on the success page.
 - /signin, /signup — account authentication.
 - /account/purchases (My Purchases) — every past order with a Download
@@ -59,8 +59,8 @@ FILES & COMPATIBILITY
 
 ACCOUNT & BILLING
 - Password reset: use "Forgot password" on the sign-in page.
-- Payment methods: all major credit and debit cards, processed securely
-  through Stripe.
+- Payment methods: card details are collected securely by Paystack during
+  checkout and are not handled by FabricNow.
 - Refund policy: because each purchase unlocks a digital file immediately,
   FabricNow does not offer refunds once a download has started. Exceptions
   (see Returns & Exchanges) are made when: a file won't open or is

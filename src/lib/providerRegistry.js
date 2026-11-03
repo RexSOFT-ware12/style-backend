@@ -1,6 +1,6 @@
 // The ONLY settings an admin may change from the dashboard. It's a strict
 // allow-list on purpose: the dashboard must never be able to overwrite things
-// like JWT_SECRET, MONGODB_URI or the Stripe keys.
+// like JWT_SECRET, MONGODB_URI or payment-provider keys.
 //
 //  secret          — encrypted at rest, never shown again (only the last 4 chars)
 //  needsRestart    — the code reads this value once at startup, so a change only

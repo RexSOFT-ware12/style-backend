@@ -3,14 +3,15 @@
 Main Node backend:
 - `MONGODB_URI`
 - `JWT_SECRET` (long random value)
+- `SECRETS_ENCRYPTION_KEY` (keep stable; encrypts Paystack reusable authorization data)
 - `GOOGLE_CLIENT_ID`
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_BILLING_WEBHOOK_SECRET` (if used separately)
-- `STRIPE_API_STARTER_PRICE_ID`
-- `STRIPE_API_GROWTH_PRICE_ID`
-- `STRIPE_API_OVERAGE_SEGMENTED_PRICE_ID`
-- `STRIPE_API_OVERAGE_BGONLY_PRICE_ID`
+- `PAYSTACK_SECRET_KEY`
+- `PAYSTACK_CURRENCY=USD` (USD must be enabled for the Paystack merchant account)
+- `PAYSTACK_PREMIUM_PLAN_CODE` (monthly USD 29.99)
+- `PAYSTACK_API_STARTER_PLAN_CODE` (monthly USD 80)
+- `PAYSTACK_API_GROWTH_PLAN_CODE` (monthly USD 2,900)
+- Configure the Paystack webhook URL as `https://<api-host>/api/paystack/webhook`
+  - Subscribe to `charge.success`, `subscription.create`, `subscription.not_renew`, `subscription.disable`, and `invoice.payment_failed`
 - `WORKSPACE_URL`
 - `FABRIC_NOW_SERVICE_URL`
 - `FABRIC_NOW_INTERNAL_SECRET`

@@ -16,7 +16,7 @@ const orderSchema = new Schema(
     items: { type: [orderItemSchema], default: [] },
     total: { type: Number, default: 0 },
     status: { type: String, enum: ["pending", "paid"], default: "pending" },
-    stripeSessionId: { type: String, default: null },
+    paystackReference: { type: String, default: null },
     paidAt: { type: Date, default: null },
   },
   { timestamps: true }

@@ -7,14 +7,14 @@
 // Unlike the consumer plan, there's no free trial here — API access always
 // requires an active paid ApiSubscription. Quota is a SOFT cap: being over
 // it doesn't flip hasAccess to false, it just means the next processed
-// image gets reported to Stripe as billable overage (see lib/stripeMeters.js
+// image gets charged through Paystack (see lib/paystackOverages.js
 // and garment-service's routes/apiGarmentTool.js).
 //
 // Credits: unused images roll over and never expire (lib/apiCredits.js).
 // `quota` = fresh monthly images, `rolloverCredits` = carried-over balance,
 // `allowance` = quota + rolloverCredits, `remaining` = allowance - used.
 //
-// Plans an admin marked as paid by hand (source "manual") have no Stripe
+// Plans an admin marked as paid by hand (source "manual") have no Paystack
 // subscription to end them, so they lapse a few days after currentPeriodEnd
 // unless the admin records the next payment.
 //
@@ -39,13 +39,22 @@ function getApiEntitlement(apiSub) {
   }
 
   const lapsed = isManualLapsed(apiSub);
-  const hasAccess = ["active", "trialing"].includes(apiSub.status) && !lapsed;
+  const paidThroughCancellation =
+    apiSub.source === "paystack" &&
+    apiSub.cancelAtPeriodEnd &&
+    apiSub.status === "canceled" &&
+    apiSub.currentPeriodEnd &&
+    new Date(apiSub.currentPeriodEnd).getTime() > Date.now();
+  const hasAccess =
+    ["paystack", "manual"].includes(apiSub.source) &&
+    (["active", "trialing"].includes(apiSub.status) || paidThroughCancellation) &&
+    !lapsed;
 
   return {
     hasAccess,
     tier: apiSub.tier,
     status: lapsed ? "expired" : apiSub.status,
-    source: apiSub.source || "stripe",
+    source: apiSub.source || null,
     quota: quotaOf(apiSub),
     rolloverCredits: rolloverOf(apiSub),
     allowance: allowanceOf(apiSub),

@@ -1,4 +1,4 @@
-// All the maths for API image credits lives here, so Stripe renewals,
+// All the maths for API image credits lives here, so Paystack renewals,
 // admin-recorded manual payments and the usage endpoint can never disagree.
 //
 // THE RULE: unused credits never expire.
@@ -105,7 +105,7 @@ function planManualPayment(sub, newQuota, now = new Date(), { forceFresh = false
   };
 }
 
-/** Manual plans have no Stripe to cancel them — they simply lapse. */
+/** Manual plans have no Paystack subscription to cancel — they simply lapse. */
 function isManualLapsed(sub, now = new Date()) {
   if (!sub || sub.source !== "manual" || !sub.currentPeriodEnd) return false;
   const graceMs = MANUAL_GRACE_DAYS * 24 * 60 * 60 * 1000;

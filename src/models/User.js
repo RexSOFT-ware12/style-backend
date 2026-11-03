@@ -26,26 +26,25 @@ const userSchema = new Schema(
       default: () => new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
     },
     plan: { type: String, enum: ["free", "premium"], default: "free" },
-    // Mirrors Stripe's own subscription status vocabulary so webhook
-    // handling can copy it over verbatim (see routes/billing.js).
+    // Provider status copied from Paystack subscription and invoice events.
     subscriptionStatus: {
       type: String,
       enum: ["none", "active", "trialing", "past_due", "canceled", "unpaid", "incomplete", "incomplete_expired"],
       default: "none",
     },
-    stripeCustomerId: { type: String, required: false },
-    stripeSubscriptionId: { type: String, required: false },
+    paystackCustomerCode: { type: String, required: false },
+    paystackSubscriptionCode: { type: String, required: false },
+    paystackEmailToken: { type: Schema.Types.Mixed, required: false, select: false },
+    paystackAuthorizationCode: { type: Schema.Types.Mixed, required: false, select: false },
+    // Keep the legacy value so existing Stripe records remain identifiable
+    // and don't receive Paystack entitlements until they re-subscribe.
+    subscriptionProvider: { type: String, enum: ["paystack", "stripe"], required: false },
+    subscriptionCancelAtPeriodEnd: { type: Boolean, default: false },
+    subscriptionCurrentPeriodEnd: { type: Date, required: false },
 
-    // Cached from the Stripe subscription itself (never from the current
-    // STRIPE_PREMIUM_PRICE_ID env var) whenever the billing webhook sees
-    // this user's consumer subscription — see routes/billing.js's
-    // customer.subscription.* handling and lib/premiumPricing.js. This is
-    // what lets a subscriber who joined at $19.99/mo keep showing $19.99
-    // on their account page even after new signups pay $29.99/mo: their
-    // Stripe subscription never gets migrated to the new Price, and we
-    // read the actual billed amount off of it rather than assuming
-    // everyone pays "the" current price.
-    premiumPriceId: { type: String, required: false },
+    // Cached from the Paystack plan/transaction that is actually billing
+    // this user, rather than from the current plan configuration.
+    premiumPlanCode: { type: String, required: false },
     premiumUnitAmountCents: { type: Number, required: false },
 
     // --- Admin dashboard controls ------------------------------------

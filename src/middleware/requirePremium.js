@@ -3,7 +3,7 @@
 //
 // Deliberately re-reads the user from the DB on every request rather than
 // trusting anything in the JWT: plan/subscriptionStatus can change at any
-// moment (webhook from Stripe, trial expiring) and tokens live for 7 days,
+// moment (Paystack webhook, trial expiring) and tokens live for 7 days,
 // so the token itself is never a safe source of truth for entitlement.
 const User = require("../models/User");
 const { getEntitlement } = require("../lib/entitlement");

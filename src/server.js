@@ -27,6 +27,7 @@ const inspirationLibraryRouter = require("./routes/inspirationLibrary");
 const tailorToolsRouter = require("./routes/tailorTools");
 const patternLibraryRouter = require("./routes/patternLibrary");
 const bodyMeasurementsRouter = require("./routes/bodyMeasurements");
+const { verifyWebhookSignature } = require("./lib/paystack");
 
 function resolveUploadDir() {
   const candidates = [
@@ -60,10 +61,35 @@ app.set("trust proxy", true);
 app.use(cors()); // allow the Next.js storefront (3000) and the Vite dashboard (5173) to call this API
 app.use(morgan("dev"));
 
-// Stripe webhook needs the raw, unparsed request body to verify its
-// signature — it must be registered BEFORE express.json() below.
-app.use("/api/orders/webhook", express.raw({ type: "application/json" }));
-app.use("/api/billing/webhook", express.raw({ type: "application/json" }));
+// Paystack uses one configured webhook URL for both subscriptions and orders.
+// Verify the raw body before JSON middleware consumes it.
+app.post("/api/paystack/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  let valid;
+  try {
+    valid = verifyWebhookSignature(req.body, req.headers["x-paystack-signature"]);
+  } catch (error) {
+    console.error("Paystack webhook is not configured:", error.message);
+    return res.status(500).send("Paystack webhook is not configured");
+  }
+  if (!valid) return res.status(400).send("Invalid Paystack webhook signature");
+
+  let event;
+  try {
+    event = JSON.parse(req.body.toString("utf8"));
+  } catch (error) {
+    console.error("Could not parse Paystack webhook:", error.message);
+    return res.status(400).send("Invalid Paystack webhook payload");
+  }
+
+  try {
+    await billingRouter.processPaystackEvent(event);
+    await ordersRouter.processPaystackEvent(event);
+    res.json({ received: true });
+  } catch (error) {
+    console.error("Failed to process Paystack webhook:", error.message);
+    res.status(500).json({ error: "Paystack webhook processing failed." });
+  }
+});
 
 // Tailor Tools boards can carry a compressed photo underlay (stored in board.layers), so allow a bigger body on that route only.
 app.use("/api/tailor-tools", express.json({ limit: "6mb" }));
@@ -104,8 +130,7 @@ app.get("/", (req, res) => {
       "POST   /api/auth/signin",
       "GET    /api/auth/me         (auth required)",
       "GET    /api/stats",
-      "POST   /api/orders/checkout           (auth required) — creates a Stripe Checkout Session",
-      "POST   /api/orders/webhook            (Stripe only)",
+      "POST   /api/orders/checkout           (auth required) — creates a Paystack checkout transaction",
       "GET    /api/orders/me                 (auth required) — order/purchase history",
       "GET    /api/orders/:orderId/download/:productId (auth required) — gated file download",
       "POST   /api/assistant/ask             — Fibo, the product-page fabric assistant",
@@ -114,21 +139,16 @@ app.get("/", (req, res) => {
       "POST   /api/assistant/onboarding      (auth required) — first-signup Welcome page picks",
       "POST   /api/pose-tool/process         (auth required) — photo -> CLO3D pose notes + turnaround refs",
       "GET    /api/billing/status             (auth required) — trial/subscription status",
-      "POST   /api/billing/checkout           (auth required) — Stripe Checkout for consumer premium plan",
-      "POST   /api/billing/portal             (auth required) — Stripe Billing Portal (manage/cancel)",
-      "GET    /api/billing/payment-methods     (auth required) — saved cards (brand, last4, expiry)",
-      "POST   /api/billing/payment-methods/setup-intent  (auth required) — start saving a card",
-      "POST   /api/billing/payment-methods/confirm       (auth required) — finish saving a card",
-      "POST   /api/billing/payment-methods/:id/default   (auth required) — set default card",
-      "DELETE /api/billing/payment-methods/:id           (auth required) — remove a card",
+      "POST   /api/billing/checkout           (auth required) — Paystack checkout for consumer Premium",
+      "POST   /api/billing/cancel             (auth required) — cancel Paystack renewal",
       "GET    /api/billing/api-status          (auth required) — API tier/quota/usage + key list",
-      "POST   /api/billing/api-checkout        (auth required) — Stripe Checkout for API Starter/Growth",
+      "POST   /api/billing/api-checkout        (auth required) — Paystack checkout for API Starter/Growth",
       "POST   /api/billing/api-keys            (auth required) — generate a new API key",
       "GET    /api/billing/api-keys            (auth required) — list API keys (no secrets)",
       "DELETE /api/billing/api-keys/:id        (auth required) — revoke an API key",
       "GET    /api/billing/api-key-status      (x-api-key header) — used by garment-service",
       "POST   /api/billing/api-usage           (x-api-key header) — used by garment-service",
-      "POST   /api/billing/webhook            (Stripe only)",
+      "POST   /api/paystack/webhook            (configured in Paystack dashboard)",
       "GET    /api/inspiration-library        (auth required) — shared Pinterest inspiration library, visible to all companies",
       "GET    /api/inspiration-library/facets (auth required) — filter values (categories, regions, genders)",
       "GET    /api/admin/*                    (admin only) users, companies, block, manual API plans, credits, provider keys",

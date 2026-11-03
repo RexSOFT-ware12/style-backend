@@ -281,7 +281,7 @@ router.post("/users/:id/unblock", async (req, res, next) => {
 // ---- Manual API subscription (customer paid us directly) -------------------
 //
 // Use this the first time (turns the plan on) AND for every later month the
-// customer pays directly (extends it). Credits behave exactly like a Stripe
+// customer pays directly (extends it). Credits behave exactly like a Paystack
 // renewal: whatever is left over carries forward, the new month's credits are
 // added on top.
 router.post("/users/:id/api-subscription", async (req, res, next) => {
@@ -293,13 +293,13 @@ router.post("/users/:id/api-subscription", async (req, res, next) => {
 
     const existing = await ApiSubscription.findOne({ userId: user._id });
 
-    // Never stack a manual plan on top of a live Stripe subscription — the
+    // Never stack a manual plan on top of a live Paystack subscription — the
     // customer would be billed twice.
-    if (existing && existing.source !== "manual" && ["active", "trialing", "past_due"].includes(existing.status)) {
+    if (existing && existing.source === "paystack" && ["active", "trialing", "past_due"].includes(existing.status)) {
       throw httpError(
         409,
-        "This customer has a live Stripe API subscription. Cancel it in Stripe first, otherwise they'd be charged twice.",
-        "STRIPE_SUBSCRIPTION_LIVE"
+        "This customer has a live Paystack API subscription. Cancel it through their billing settings first, otherwise they'd be charged twice.",
+        "PAYSTACK_SUBSCRIPTION_LIVE"
       );
     }
 
@@ -330,6 +330,7 @@ router.post("/users/:id/api-subscription", async (req, res, next) => {
       tier,
       status: "active",
       source: "manual",
+      cancelAtPeriodEnd: false,
       quota,
       ...plan.set,
       manualPayment: {
@@ -339,9 +340,17 @@ router.post("/users/:id/api-subscription", async (req, res, next) => {
         recordedAt: now,
       },
     };
-    // Detach any old (canceled) Stripe subscription so a late Stripe webhook
-    // for it can never flip this manual plan back to canceled.
-    const update = { $set: set, $unset: { stripeSubscriptionId: "", stripeSubscriptionItemIds: "" } };
+    // Detach any old Paystack subscription so a delayed webhook cannot
+    // overwrite this manually managed plan.
+    const update = {
+      $set: set,
+      $unset: {
+        paystackSubscriptionCode: "",
+        paystackEmailToken: "",
+        paystackAuthorizationCode: "",
+        paystackCustomerCode: "",
+      },
+    };
 
     // No setDefaultsOnInsert on purpose: it would try to default the whole
     // `usage` object while we $set usage.* fields, which MongoDB rejects as a
@@ -393,7 +402,7 @@ router.post("/users/:id/api-subscription/cancel", async (req, res, next) => {
     const sub = await ApiSubscription.findOne({ userId: user._id });
     if (!sub) throw httpError(404, "No API subscription found.");
     if (sub.source !== "manual") {
-      throw httpError(400, "This plan is billed through Stripe — cancel it from Stripe (or the customer's billing portal) so billing stops too.");
+      throw httpError(400, "This plan is billed through Paystack — ask the customer to cancel from their billing settings so renewal stops too.");
     }
     sub.status = "canceled"; // unused credits stay on the account for if they come back
     await sub.save();

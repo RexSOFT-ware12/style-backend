@@ -5,7 +5,7 @@ const ApiSubscription=require('../models/ApiSubscription');
 const BodyMeasurementScan=require('../models/BodyMeasurementScan');
 const {getApiEntitlement}=require('../lib/apiEntitlement');
 const {isOverAllowance}=require('../lib/apiCredits');
-const {reportOverageUnit}=require('../lib/stripeMeters');
+const {reportOverageUnit}=require('../lib/paystackOverages');
 const router=express.Router();
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:12*1024*1024,files:5}});
 const VIEWS=['front','side','back','left','right'];
@@ -36,7 +36,7 @@ router.post('/scans',requireAuth,upload.fields(VIEWS.map(name=>({name,maxCount:1
   // Count only after the worker has successfully returned a completed result.
   const updated=await ApiSubscription.findOneAndUpdate({_id:sub._id},{$inc:{'usage.segmentedCount':count}},{new:true});
   const usedAfter=(updated.usage.segmentedCount||0)+(updated.usage.bgOnlyCount||0);
-  if(process.env.STRIPE_SECRET_KEY){const stripe=require('stripe')(process.env.STRIPE_SECRET_KEY);for(let i=0;i<count;i++){const usedBefore=usedAfter-count+i;if(isOverAllowance(updated,usedBefore))await reportOverageUnit(stripe,'segmented',updated.stripeCustomerId,`body-${scan.id}-${i+1}`).catch(e=>console.error('Body scan overage report failed:',e.message));}}
+  for(let i=0;i<count;i++){const usedBefore=usedAfter-count+i;if(isOverAllowance(updated,usedBefore))await reportOverageUnit(updated,'segmented',`body-${scan.id}-${i+1}`);}
   scan.measurements=result.measurements;scan.confidence=result.confidence||{};scan.status=result.status==='review'?'review':'completed';scan.engineVersion=result.engine_version||'unknown';scan.outputs=result.outputs||{};await scan.save();
   res.json({scan,usage:{imagesDeducted:count,usedThisPeriod:usedAfter,quota:updated.quota,rolloverCredits:updated.rolloverCredits||0}});
  }catch(e){if(scan){scan.status='failed';await scan.save().catch(()=>{})}next(e)}
@@ -76,7 +76,7 @@ router.post('/scans/:scanId/patterns',requireAuth,async(req,res,next)=>{
   if(!response.ok)return res.status(response.status).json({error:result.detail||result.error||'Pattern generation failed.'});
   const updated=await ApiSubscription.findOneAndUpdate({_id:sub._id},{$inc:{'usage.segmentedCount':1}},{new:true});
   const usedAfter=(updated.usage.segmentedCount||0)+(updated.usage.bgOnlyCount||0);
-  if(process.env.STRIPE_SECRET_KEY){const stripe=require('stripe')(process.env.STRIPE_SECRET_KEY);const usedBefore=usedAfter-1;if(isOverAllowance(updated,usedBefore))await reportOverageUnit(stripe,'segmented',updated.stripeCustomerId,`body-pattern-${scan.id}-${Date.now()}`).catch(e=>console.error('Body pattern overage report failed:',e.message));}
+  const usedBefore=usedAfter-1;if(isOverAllowance(updated,usedBefore))await reportOverageUnit(updated,'segmented',`body-pattern-${scan.id}-${usedAfter}`);
   scan.patterns=scan.patterns||[];const workerPatternId=String(result.outputs?.svg_file||'').split('/').slice(-2,-1)[0];scan.patterns.push({garment:result.pattern?.garment||req.body.garment||'bodice',engineVersion:result.engine_version,workerPatternId,outputs:result.outputs,createdAt:new Date()});await scan.save();
   res.json({result,patternId:String(scan.patterns[scan.patterns.length-1]._id),usage:{imagesDeducted:1,usedThisPeriod:usedAfter,quota:updated.quota,rolloverCredits:updated.rolloverCredits||0}});
  }catch(e){next(e)}

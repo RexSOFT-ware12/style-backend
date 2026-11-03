@@ -5,13 +5,11 @@ const Product = require("../models/Product");
 const { requireAuth } = require("../middleware/auth");
 const { DIGITAL_DIR } = require("../middleware/upload");
 const { streamObject } = require("../lib/gcs");
+const { getCurrency, initializeTransaction, verifyTransaction } = require("../lib/paystack");
 
 const router = express.Router();
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/$/, "");
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? require("stripe")(process.env.STRIPE_SECRET_KEY)
-  : null;
 
 function serializeOrder(order) {
   const obj = order.toJSON ? order.toJSON() : order;
@@ -34,14 +32,14 @@ function serializeOrder(order) {
 // POST /api/orders/checkout  (auth required)
 // Body: { items: [{ productId, quantity }] }
 // Creates a pending order priced from server-side product data (never trust
-// client-submitted prices), then a Stripe Checkout Session for it. These are
+// client-submitted prices), then a Paystack checkout transaction. These are
 // digital goods — no shipping/address collection.
 // ---------------------------------------------------------------------------
 router.post("/checkout", requireAuth, async (req, res, next) => {
   try {
-    if (!stripe) {
+    if (!process.env.PAYSTACK_SECRET_KEY) {
       return res.status(500).json({
-        error: "Payments aren't configured yet. Set STRIPE_SECRET_KEY on the server.",
+        error: "Payments aren't configured yet. Set PAYSTACK_SECRET_KEY on the server.",
       });
     }
 
@@ -50,7 +48,6 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
       return res.status(400).json({ error: "items must be a non-empty array" });
     }
 
-    const lineItems = [];
     const orderItems = [];
 
     for (const { productId, quantity } of items) {
@@ -70,14 +67,6 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
         quantity: qty,
       });
 
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: { name: product.name },
-          unit_amount: Math.round(product.price * 100),
-        },
-        quantity: qty,
-      });
     }
 
     const total = orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -89,66 +78,62 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
       status: "pending",
     });
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      customer_email: req.user.email,
-      // Digital delivery — no shipping address collection at all.
-      success_url: `${FRONTEND_URL}/checkout/success?order=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${FRONTEND_URL}/checkout?canceled=1`,
-      metadata: { orderId: order.id },
+    const transaction = await initializeTransaction({
+      email: req.user.email,
+      amount: Math.round(total * 100),
+      callbackUrl: `${FRONTEND_URL}/checkout/success?order=${order.id}`,
+      metadata: { orderId: order.id, userId: req.user.sub, product: "digital_order" },
     });
 
-    order.stripeSessionId = session.id;
+    order.paystackReference = transaction.reference;
     await order.save();
 
-    res.json({ url: session.url, orderId: order.id });
+    res.json({ url: transaction.authorization_url, orderId: order.id, reference: transaction.reference });
   } catch (err) {
     next(err);
   }
 });
 
-// ---------------------------------------------------------------------------
-// POST /api/orders/webhook  (Stripe only — mounted with raw body in server.js)
-// Marks the matching order paid once Stripe confirms payment succeeded.
-// ---------------------------------------------------------------------------
-router.post("/webhook", async (req, res) => {
-  if (!stripe) return res.status(500).send("Stripe not configured");
-
-  const sig = req.headers["stripe-signature"];
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  let event;
-  try {
-    event = webhookSecret
-      ? stripe.webhooks.constructEvent(req.body, sig, webhookSecret)
-      : JSON.parse(req.body.toString("utf8")); // dev fallback if no signing secret set yet
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    const orderId = session.metadata?.orderId;
-
-    try {
-      const order = await Order.findOne({
-        $or: [{ _id: orderId }, { stripeSessionId: session.id }].filter((c) => c._id || c.stripeSessionId),
-      });
-      if (order && order.status !== "paid") {
-        order.status = "paid";
-        order.paidAt = new Date();
-        await order.save();
+router.processPaystackEvent = async function processPaystackEvent(event) {
+  if (event.event === "charge.success" && event.data?.reference) {
+    let metadata = event.data.metadata || {};
+    if (typeof metadata === "string") {
+      try {
+        metadata = JSON.parse(metadata);
+      } catch (error) {
+        console.error("Paystack order webhook metadata is invalid JSON:", error.message);
+        metadata = {};
       }
-    } catch (err) {
-      console.error("Failed to mark order paid:", err.message);
+    }
+    const orderId = /^[a-f\d]{24}$/i.test(String(metadata.orderId || "")) ? metadata.orderId : null;
+    const order = await Order.findOne({
+      $or: [
+        { paystackReference: event.data.reference },
+        ...(orderId ? [{ _id: orderId }] : []),
+      ],
+    });
+    if (!order) return;
+    const verified = await verifyTransaction(event.data.reference);
+    if (
+      order.status !== "paid" &&
+      verified.status === "success" &&
+      String(verified.currency).toUpperCase() === getCurrency() &&
+      Number(verified.amount) === Math.round(order.total * 100)
+    ) {
+      order.paystackReference = event.data.reference;
+      order.status = "paid";
+      order.paidAt = new Date();
+      await order.save();
+    } else if (verified.status === "success") {
+      console.error("Paystack order payment did not match the stored order.", {
+        orderId: order.id,
+        reference: event.data.reference,
+        amount: verified.amount,
+        currency: verified.currency,
+      });
     }
   }
-
-  res.json({ received: true });
-});
+};
 
 // ---------------------------------------------------------------------------
 // GET /api/orders/me  (auth required) — "My Purchases" page data

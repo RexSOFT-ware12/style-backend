@@ -149,4 +149,4 @@ async function describeAll() {
   }));
 }
 
-module.exports = { initSecrets, refreshSecrets, setSecret, clearSecret, describeAll };
+module.exports = { initSecrets, refreshSecrets, setSecret, clearSecret, describeAll, encrypt, decrypt };
