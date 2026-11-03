@@ -7,6 +7,7 @@ Main Node backend:
 - `JWT_SECRET` (long random value)
 - `SECRETS_ENCRYPTION_KEY` (keep stable; encrypts Paystack reusable authorization data)
 - `GOOGLE_CLIENT_ID`
+- `CONTACT_EMAIL` (optional; recipient for `POST /api/contact`, defaults to `SMTP_USER`)
 - `PAYSTACK_SECRET_KEY`
 - `PAYSTACK_CURRENCY=GHS`
 - `PAYSTACK_PREMIUM_PLAN_CODE` (monthly GHS 350.13)

@@ -27,6 +27,7 @@ const inspirationLibraryRouter = require("./routes/inspirationLibrary");
 const tailorToolsRouter = require("./routes/tailorTools");
 const patternLibraryRouter = require("./routes/patternLibrary");
 const bodyMeasurementsRouter = require("./routes/bodyMeasurements");
+const contactRouter = require("./routes/contact");
 const { verifyWebhookSignature } = require("./lib/paystack");
 
 function resolveUploadDir() {
@@ -130,6 +131,7 @@ app.get("/", (req, res) => {
       "POST   /api/auth/signin",
       "GET    /api/auth/me         (auth required)",
       "GET    /api/stats",
+      "POST   /api/contact                    — sends a message to FabricNow support",
       "POST   /api/orders/checkout           (auth required) — creates a Paystack checkout transaction",
       "GET    /api/orders/me                 (auth required) — order/purchase history",
       "GET    /api/orders/:orderId/download/:productId (auth required) — gated file download",
@@ -162,6 +164,7 @@ app.use("/api/products", productsRouter);
 app.use("/api/taxonomies", taxonomiesRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/stats", statsRouter);
+app.use("/api/contact", contactRouter);
 app.use("/api/orders", ordersRouter);
 app.use("/api/assistant", assistantRouter);
 app.use("/api/pose-tool", poseToolRouter);

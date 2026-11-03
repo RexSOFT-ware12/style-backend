@@ -39,7 +39,7 @@ function getTransporter() {
  * Send an email. Resolves to true/false and NEVER throws — email problems
  * must not break sign-in or billing flows.
  */
-async function sendMail({ to, cc, subject, html, text }) {
+async function sendMail({ to, cc, replyTo, subject, html, text }) {
   if (!to) return false;
   if (!isConfigured()) {
     console.warn(`[mail] SMTP not configured — skipped "${subject}" to ${to}`);
@@ -54,7 +54,7 @@ async function sendMail({ to, cc, subject, html, text }) {
       subject,
       html,
       text,
-      replyTo: process.env.SMTP_USER,
+      replyTo: replyTo || process.env.SMTP_USER,
     });
     return true;
   } catch (err) {
