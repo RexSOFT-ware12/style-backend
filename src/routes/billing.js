@@ -221,8 +221,10 @@ async function applyPaystackSubscription(data, { canceled = false, notRenewing =
   user.premiumPlanCode = planCode || user.premiumPlanCode;
   user.premiumUnitAmountMinor = data.amount ?? user.premiumUnitAmountMinor ?? expectedPremiumAmount;
   user.premiumCurrency = data.currency ? String(data.currency).toUpperCase() : getCurrency();
-  user.premiumUnitAmountCents =
-    user.premiumCurrency === "USD" ? user.premiumUnitAmountMinor : user.premiumUnitAmountCents;
+  user.premiumPriceUsd = Number(data.metadata?.displayAmount) > 0
+    ? Number(data.metadata.displayAmount)
+    : Number(process.env.FABRICNOW_PREMIUM_PRICE_USD || 29.99);
+  user.premiumUnitAmountCents = user.premiumUnitAmountCents;
   await user.save();
 
   if (!canceled && !notRenewing && !wasPremium) {
@@ -447,13 +449,11 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
       amount: premiumAmount,
       planCode: PREMIUM_PLAN_CODE,
       callbackUrl: `${FRONTEND_URL}/account?upgraded=1&billing=success`,
-      metadata: { userId: user.id, product: "premium" },
+      metadata: { userId: user.id, product: "premium", displayCurrency: "USD", displayAmount: Number(process.env.FABRICNOW_PREMIUM_PRICE_USD || 29.99) },
     });
     res.json({
-      url: transaction.authorization_url,
+      access_code: transaction.access_code,
       reference: transaction.reference,
-      amount: premiumAmount,
-      currency: getCurrency(),
     });
   } catch (err) {
     handlePaystackError(err, res, next);
@@ -563,7 +563,7 @@ router.post("/api-checkout", requireAuth, async (req, res, next) => {
       callbackUrl: `${WORKSPACE_URL}?billing=success`,
       metadata: { userId: user.id, product: "api", apiTier: tier },
     });
-    res.json({ url: transaction.authorization_url, reference: transaction.reference, amount, currency: getCurrency() });
+    res.json({ access_code: transaction.access_code, reference: transaction.reference });
   } catch (err) {
     handlePaystackError(err, res, next);
   }

@@ -20,8 +20,6 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
  *   trialEndsAt: Date,
  *   trialDaysLeft: number,
  *   currentPremiumPriceUsd: number|null,
- *   currentPremiumPriceAmount: number|null,
- *   currentPremiumPriceCurrency: string,
  *   premiumPriceUsd: number|null,
  *   premiumPriceAmount: number|null,
  *   premiumPriceCurrency: string,
@@ -50,37 +48,28 @@ function getEntitlement(user) {
 
   // What this specific user is actually billed, cached from Paystack on the
   // User doc — null until a subscription webhook has recorded it.
-  const premiumPriceCurrency = user.premiumCurrency || "USD";
-  const premiumUnitAmountMinor = user.premiumUnitAmountMinor ?? user.premiumUnitAmountCents;
-  const premiumPriceAmount = centsToUsd(premiumUnitAmountMinor);
-  const premiumPriceUsd = premiumPriceCurrency === "USD" ? premiumPriceAmount : null;
-  const currentCurrency = (process.env.PAYSTACK_CURRENCY || "USD").toUpperCase();
-  const configuredCurrentPriceMinor = currentPriceMinor(currentCurrency);
+  // GHS is the settlement currency; never expose a GHS amount in the UI.
+  // Keep the USD catalogue amount as the display price. Existing records that
+  // predate this field fall back to the current USD catalogue price.
+  const premiumPriceUsd = user.premiumPriceUsd ?? null;
+  const configuredCurrentPriceMinor = currentPriceMinor("USD");
 
   return {
     hasAccess: trialActive || subscriptionGood,
     plan: user.plan,
     subscriptionStatus: user.subscriptionStatus,
+    cancelAtPeriodEnd: Boolean(user.subscriptionCancelAtPeriodEnd),
     trialActive,
     trialEndsAt,
     trialDaysLeft,
     // Today's list price for NEW subscribers (what /pricing shows someone
     // who isn't already subscribed).
-    currentPremiumPriceUsd:
-      currentCurrency === "USD"
-        ? configuredCurrentPriceMinor == null
-          ? CURRENT_PRICE_USD
-          : configuredCurrentPriceMinor / 100
-        : null,
-    currentPremiumPriceAmount: configuredCurrentPriceMinor == null ? null : configuredCurrentPriceMinor / 100,
-    currentPremiumPriceCurrency: currentCurrency,
+    currentPremiumPriceUsd: configuredCurrentPriceMinor / 100,
     // What THIS user is actually billed, if known. Null rather than
     // falling back to currentPremiumPriceUsd, so the frontend can tell
     // "we don't know yet" apart from "you pay full price."
     premiumPriceUsd,
-    premiumPriceAmount,
-    premiumPriceCurrency,
-    isGrandfathered: isGrandfathered(premiumUnitAmountMinor, premiumPriceCurrency),
+    isGrandfathered: isGrandfathered(typeof premiumPriceUsd === "number" ? Math.round(premiumPriceUsd * 100) : null, "USD"),
   };
 }
 

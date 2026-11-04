@@ -47,6 +47,8 @@ const userSchema = new Schema(
     premiumPlanCode: { type: String, required: false },
     premiumUnitAmountMinor: { type: Number, required: false },
     premiumCurrency: { type: String, enum: ["GHS", "USD"], required: false },
+    // USD catalogue price shown in FabricNow; Paystack actually charges GHS.
+    premiumPriceUsd: { type: Number, required: false },
     // Legacy USD-only field retained for existing API clients and records.
     premiumUnitAmountCents: { type: Number, required: false },
 

@@ -13,16 +13,16 @@
 // CURRENT_PRICE_CENTS below is ONLY used to decide whether to show a
 // "legacy pricing" badge (i.e. is this user's cached price below the
 // current list price) — it does not drive checkout or billing.
-const CURRENT_PRICE_CENTS = 2999; // $29.99 USD fallback for legacy configuration
+const CURRENT_PRICE_CENTS = 2999; // $29.99 USD storefront price
 const CURRENT_PRICE_USD = CURRENT_PRICE_CENTS / 100;
 
-function currentPriceMinor(currency) {
-  const raw = process.env.PAYSTACK_PREMIUM_AMOUNT;
+function currentPriceMinor(_currency = "USD") {
+  const raw = process.env.FABRICNOW_PREMIUM_PRICE_USD;
   if (raw != null && raw !== "") {
     const amount = Number(raw);
     if (Number.isFinite(amount) && amount > 0) return Math.round(amount * 100);
   }
-  return currency === "USD" ? CURRENT_PRICE_CENTS : null;
+  return CURRENT_PRICE_CENTS;
 }
 
 function isGrandfathered(premiumUnitAmountMinor, currency = "USD") {

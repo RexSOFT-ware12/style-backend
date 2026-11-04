@@ -51,14 +51,16 @@ async function request(path, { method = "GET", body } = {}) {
 }
 
 function getCurrency() {
-  const currency = (process.env.PAYSTACK_CURRENCY || "USD").toUpperCase();
-  if (!["GHS", "USD"].includes(currency)) {
-    const error = new Error("PAYSTACK_CURRENCY must be GHS or USD.");
+  // Ghana Paystack integrations transact and settle in GHS. USD is a
+  // storefront display currency only; never send USD to a Ghana account.
+  const currency = (process.env.PAYSTACK_CURRENCY || "GHS").toUpperCase();
+  if (currency !== "GHS") {
+    const error = new Error("Ghana Paystack billing must use GHS. Keep USD for storefront display only.");
     error.statusCode = 503;
     error.code = "PAYSTACK_CURRENCY_UNSUPPORTED";
     throw error;
   }
-  return currency;
+  return "GHS";
 }
 
 function getConfiguredAmountMinor(envName) {
@@ -88,7 +90,7 @@ function convertUsdToPaystackMinor(amountUsd) {
   if (!Number.isFinite(amountUsd) || amountUsd < 0) {
     throw new Error("Order amount must be a non-negative USD amount.");
   }
-  const amount = getCurrency() === "GHS" ? amountUsd * getUsdGhsRate() : amountUsd;
+  const amount = amountUsd * getUsdGhsRate();
   return Math.round(amount * 100);
 }
 

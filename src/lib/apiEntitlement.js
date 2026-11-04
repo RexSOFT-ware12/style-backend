@@ -27,6 +27,7 @@ function getApiEntitlement(apiSub) {
       hasAccess: false,
       tier: null,
       status: "none",
+      cancelAtPeriodEnd: false,
       source: null,
       quota: null,
       rolloverCredits: 0,
@@ -34,8 +35,6 @@ function getApiEntitlement(apiSub) {
       used: 0,
       remaining: null,
       currentPeriodEnd: null,
-      billingAmountMinor: null,
-      billingCurrency: null,
       lapsed: false,
     };
   }
@@ -56,6 +55,7 @@ function getApiEntitlement(apiSub) {
     hasAccess,
     tier: apiSub.tier,
     status: lapsed ? "expired" : apiSub.status,
+    cancelAtPeriodEnd: Boolean(apiSub.cancelAtPeriodEnd),
     source: apiSub.source || null,
     quota: quotaOf(apiSub),
     rolloverCredits: rolloverOf(apiSub),
@@ -63,8 +63,6 @@ function getApiEntitlement(apiSub) {
     used: usedOf(apiSub),
     remaining: remainingOf(apiSub),
     currentPeriodEnd: apiSub.currentPeriodEnd,
-    billingAmountMinor: apiSub.billingAmountMinor ?? null,
-    billingCurrency: apiSub.billingCurrency || null,
     lapsed,
   };
 }

@@ -17,8 +17,6 @@ function serializeOrder(order) {
     id: obj.id,
     status: obj.status,
     total: obj.total,
-    amount: obj.paystackAmountMinor ?? null,
-    currency: obj.currency || null,
     items: obj.items.map((i) => ({
       productId: String(i.productId),
       name: i.name,
@@ -95,7 +93,7 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
     order.paystackReference = transaction.reference;
     await order.save();
 
-    res.json({ url: transaction.authorization_url, orderId: order.id, reference: transaction.reference, currency, amount: paystackAmountMinor });
+    res.json({ access_code: transaction.access_code, orderId: order.id, reference: transaction.reference });
   } catch (err) {
     if (err.code?.startsWith("PAYSTACK_")) {
       console.error("Paystack order checkout failed:", err.message);
