@@ -29,9 +29,13 @@ Run the Node API and Fabric Now Python worker as separate services. The Node API
 Transactional email (sign-in alerts, welcome/billing notices, and contact form)
 is sent through Resend's HTTPS API, so the backend does not need SMTP access.
 Set `RESEND_API_KEY` and a `RESEND_FROM_EMAIL` address on your verified
-Resend domain. The default sender is `FabricNow <support@support.fabricnow.pro>`;
+Resend domain. `RESEND_FROM_EMAIL` is used for regular transactional email;
+optionally set `RESEND_INVOICE_FROM_EMAIL` to a separate verified sender for
+payment invoices. Without it, invoices use `RESEND_FROM_EMAIL`;
 set `SUPPORT_EMAIL` to the inbox that should receive contact submissions and
-sign-in alert copies.
+sign-in alert copies. Successful Paystack order and subscription payments send
+a branded invoice email showing the actual GHS amount charged, along with USD
+catalog pricing when applicable.
 
 The authenticated workspace copilot (`POST /api/assistant/workspace`) uses OpenAI. Set `OPENAI_API_KEY` on the Node backend; `OPENAI_ASSISTANT_MODEL` is optional and defaults to `gpt-4o-mini`. Other Gemini-powered tools remain unchanged.
 

@@ -236,6 +236,72 @@ function paymentFailed({ name, planName }) {
   };
 }
 
+function paymentInvoice({
+  name,
+  invoiceNumber,
+  reference,
+  paidAmountMinor,
+  currency,
+  paidAt = new Date(),
+  items = [],
+  catalogTotalUsd,
+  planName,
+}) {
+  const first = esc(String(name || "there").split(" ")[0]);
+  const paidAmount = fmtMoney(Number(paidAmountMinor), currency);
+  const invoiceItems = items
+    .map((item) => {
+      const quantity = Math.max(1, Number(item.quantity) || 1);
+      const unitPrice = Number(item.price) || 0;
+      const lineTotal = fmtMoney(Math.round(unitPrice * quantity * 100), "USD");
+      return `<tr>
+        <td style="padding:12px 16px;border-bottom:1px solid ${BRAND.line};font-family:${FONT};font-size:14px;color:${BRAND.text};">${esc(item.name)}</td>
+        <td align="center" style="padding:12px 8px;border-bottom:1px solid ${BRAND.line};font-family:${FONT};font-size:14px;color:${BRAND.text};">${quantity}</td>
+        <td align="right" style="padding:12px 16px;border-bottom:1px solid ${BRAND.line};font-family:${FONT};font-size:14px;color:${BRAND.text};">${esc(lineTotal)}</td>
+      </tr>`;
+    })
+    .join("");
+  const itemTable = invoiceItems
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0;border:1px solid ${BRAND.line};border-collapse:collapse;">
+        <thead><tr style="background:#F8F9FB;">
+          <th align="left" style="padding:11px 16px;font-family:${FONT};font-size:12px;color:${BRAND.muted};">Item</th>
+          <th align="center" style="padding:11px 8px;font-family:${FONT};font-size:12px;color:${BRAND.muted};">Qty</th>
+          <th align="right" style="padding:11px 16px;font-family:${FONT};font-size:12px;color:${BRAND.muted};">Line total (USD)</th>
+        </tr></thead><tbody>${invoiceItems}</tbody>
+      </table>`
+    : "";
+  const catalogNote =
+    typeof catalogTotalUsd === "number"
+      ? p(`Catalog total: <strong>${esc(fmtMoney(Math.round(catalogTotalUsd * 100), "USD"))}</strong>. Your payment was charged in <strong>${esc(currency)}</strong>; your bank may show its own conversion or fees.`)
+      : "";
+  const html = layout({
+    preheader: `Payment received: ${paidAmount || currency}. Invoice ${invoiceNumber}.`,
+    badgeHtml: badge("Payment received", BRAND.ok, BRAND.okBg),
+    title: "Your FabricNow invoice",
+    bodyHtml:
+      p(`Hi ${first},`) +
+      p("Thank you for your payment. This email is your invoice and payment receipt.") +
+      detailsTable([
+        ["Invoice", invoiceNumber],
+        ["Date paid", fmtDateTime(paidAt)],
+        ["Payment reference", reference],
+        ["Plan", planName],
+      ]) +
+      itemTable +
+      catalogNote +
+      `<div style="background:${BRAND.navy};border-radius:10px;padding:18px 20px;margin:20px 0;color:#ffffff;">
+        <div style="font-family:${FONT};font-size:12px;color:#D8D6E4;">AMOUNT PAID · ${esc(currency)}</div>
+        <div style="font-family:${FONT};font-size:26px;line-height:1.35;font-weight:700;color:#ffffff;">${esc(paidAmount || `${currency} ${Number(paidAmountMinor) / 100}`)}</div>
+      </div>` +
+      small("Your payment was processed by Paystack. Keep this receipt for your records."),
+  });
+  return {
+    subject: `Your FabricNow invoice ${invoiceNumber}`,
+    html,
+    text: `Hi ${name || "there"},\n\nThank you for your payment. This email is your FabricNow invoice and receipt.\nInvoice: ${invoiceNumber}\nDate paid: ${fmtDateTime(paidAt)}\nPayment reference: ${reference}\n${planName ? `Plan: ${planName}\n` : ""}${items.length ? `Items: ${items.map((item) => `${item.name} x${item.quantity || 1}`).join(", ")}\nCatalog total: ${fmtMoney(Math.round((catalogTotalUsd || 0) * 100), "USD")}\n` : ""}Amount paid: ${paidAmount || `${currency} ${Number(paidAmountMinor) / 100}`}\n${catalogTotalUsd !== undefined ? "Catalog prices are in USD; the payment was charged in GHS.\n" : ""}\n— FabricNow`,
+  };
+}
+
 function workspaceInvitation({ inviterName, companyName, role, acceptUrl, expiresAt, hasAccount }) {
   const roleLabel = String(role || "member").replace(/[-_]/g, " ").replace(/^./, (c) => c.toUpperCase());
   const who = inviterName || "A teammate";
@@ -266,4 +332,12 @@ function workspaceInvitation({ inviterName, companyName, role, acceptUrl, expire
   };
 }
 
-module.exports = { workspaceInvitation, welcome, signinAlert, subscriptionConfirmed, subscriptionCanceled, paymentFailed };
+module.exports = {
+  workspaceInvitation,
+  welcome,
+  signinAlert,
+  subscriptionConfirmed,
+  subscriptionCanceled,
+  paymentFailed,
+  paymentInvoice,
+};

@@ -13,7 +13,7 @@ function isConfigured() {
  * Send an email. Resolves to true/false and NEVER throws — email problems
  * must not break sign-in or billing flows.
  */
-async function sendMail({ to, cc, replyTo, subject, html, text }) {
+async function sendMail({ to, cc, replyTo, from, subject, html, text, idempotencyKey }) {
   if (!to) return false;
   if (!isConfigured()) {
     console.warn(`[mail] RESEND_API_KEY not configured — skipped "${subject}" to ${to}`);
@@ -23,7 +23,7 @@ async function sendMail({ to, cc, replyTo, subject, html, text }) {
   const supportEmail =
     process.env.SUPPORT_EMAIL || process.env.CONTACT_EMAIL || "support@fabricnow.pro";
   const payload = {
-    from: process.env.RESEND_FROM_EMAIL || "FabricNow <support@support.fabricnow.pro>",
+    from: from || process.env.RESEND_FROM_EMAIL || "FabricNow <reply@support.fabricnow.pro>",
     to: Array.isArray(to) ? to : [to],
     subject,
     ...(cc ? { cc: Array.isArray(cc) ? cc : [cc] } : {}),
@@ -38,6 +38,7 @@ async function sendMail({ to, cc, replyTo, subject, html, text }) {
       headers: {
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
         "Content-Type": "application/json",
+        ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
       },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(15_000),

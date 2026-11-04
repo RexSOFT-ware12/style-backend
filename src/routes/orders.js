@@ -2,10 +2,12 @@ const express = require("express");
 const path = require("path");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+const User = require("../models/User");
 const { requireAuth } = require("../middleware/auth");
 const { DIGITAL_DIR } = require("../middleware/upload");
 const { privateDownloadUrl } = require("../lib/cloudinary");
 const { convertUsdToPaystackMinor, getCurrency, initializeTransaction, verifyTransaction } = require("../lib/paystack");
+const { notifyPaymentInvoice } = require("../lib/notify");
 
 const router = express.Router();
 
@@ -129,16 +131,44 @@ router.processPaystackEvent = async function processPaystackEvent(event) {
     if (!order) return;
     const verified = await verifyTransaction(event.data.reference);
     if (
-      order.status !== "paid" &&
       verified.status === "success" &&
       String(verified.currency).toUpperCase() === getCurrency() &&
       Number(verified.amount) === order.paystackAmountMinor &&
       String(order.currency).toUpperCase() === getCurrency()
     ) {
       order.paystackReference = event.data.reference;
-      order.status = "paid";
-      order.paidAt = new Date();
-      await order.save();
+      if (order.status !== "paid") {
+        order.status = "paid";
+        order.paidAt = new Date();
+        await order.save();
+      }
+
+      if (!order.invoiceEmailSentAt) {
+        const user = await User.findById(order.userId).select("name email");
+        if (!user?.email) {
+          console.error("Could not send order invoice because the customer account has no email.", {
+            orderId: order.id,
+          });
+          return;
+        }
+        const sent = await notifyPaymentInvoice(user, {
+          invoiceNumber: order.id,
+          reference: event.data.reference,
+          paidAmountMinor: verified.amount,
+          currency: verified.currency,
+          paidAt: verified.paid_at || order.paidAt,
+          items: order.items.map((item) => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          catalogTotalUsd: order.total,
+        });
+        if (sent) {
+          order.invoiceEmailSentAt = new Date();
+          await order.save();
+        }
+      }
     } else if (verified.status === "success") {
       console.error("Paystack order payment did not match the stored order.", {
         orderId: order.id,

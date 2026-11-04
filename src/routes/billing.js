@@ -9,7 +9,12 @@ const { generateApiKey, hashApiKey } = require("../lib/apiKeyCrypto");
 const { API_TIERS, isSelfServeTier, getTierConfig } = require("../lib/apiTiers");
 const { reportOverageUnit } = require("../lib/paystackOverages");
 const { rollPeriodSet, isOverAllowance, addMonthsUTC } = require("../lib/apiCredits");
-const { notifySubscriptionActive, notifySubscriptionCanceled, notifyPaymentFailed } = require("../lib/notify");
+const {
+  notifySubscriptionActive,
+  notifySubscriptionCanceled,
+  notifyPaymentFailed,
+  notifyPaymentInvoice,
+} = require("../lib/notify");
 const { encrypt, decrypt } = require("../lib/secretsStore");
 const {
   disableSubscription,
@@ -318,6 +323,15 @@ async function applySuccessfulCharge(data) {
       apiSub.currentPeriodEnd = nextPaymentDate || apiSub.currentPeriodEnd || addMonthsUTC(now, 1);
     }
     await apiSub.save();
+    const user = await User.findById(apiSub.userId).select("name email");
+    await notifyPaymentInvoice(user, {
+      invoiceNumber: data.reference,
+      reference: data.reference,
+      paidAmountMinor: data.amount,
+      currency: data.currency,
+      paidAt: now,
+      planName: getTierConfig(apiSub.tier).label,
+    });
     return;
   }
 
@@ -362,6 +376,14 @@ async function applySuccessfulCharge(data) {
       renewsOn: apiSub.currentPeriodEnd,
       trialing: false,
     });
+    await notifyPaymentInvoice(user, {
+      invoiceNumber: data.reference,
+      reference: data.reference,
+      paidAmountMinor: data.amount,
+      currency: data.currency,
+      paidAt: now,
+      planName: getTierConfig(tier).label,
+    });
     return;
   }
   const matchesPremium =
@@ -400,6 +422,14 @@ async function applySuccessfulCharge(data) {
     if (user.premiumCurrency === "USD") user.premiumUnitAmountCents = Number(data.amount);
   }
   await user.save();
+  await notifyPaymentInvoice(user, {
+    invoiceNumber: data.reference,
+    reference: data.reference,
+    paidAmountMinor: data.amount,
+    currency: data.currency,
+    paidAt: now,
+    planName: "FabricNow Premium",
+  });
   if (wasPastDue) {
     notifySubscriptionActive(user, {
       planName: "FabricNow Premium",

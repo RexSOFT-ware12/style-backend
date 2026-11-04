@@ -89,7 +89,34 @@ const notifySubscriptionCanceled = (user, data) =>
 const notifyPaymentFailed = (user, data) =>
   fire(send(user.email, tpl.paymentFailed({ name: user.name, ...data })));
 
-// Returns true if the email was handed to the SMTP server.
+const notifyPaymentInvoice = (user, data) => {
+  if (!user?.email || !data?.reference || !Number.isFinite(Number(data.paidAmountMinor))) {
+    console.error("[notify] payment invoice missing a recipient, reference, or paid amount.");
+    return Promise.resolve(false);
+  }
+  const built = tpl.paymentInvoice({ name: user.name, ...data });
+  return sendMail({
+    to: user.email,
+    from:
+      process.env.RESEND_INVOICE_FROM_EMAIL ||
+      process.env.RESEND_FROM_EMAIL ||
+      "FabricNow Invoices <invoices@invoice.fabricnow.pro>",
+    subject: built.subject,
+    html: built.html,
+    text: built.text,
+    idempotencyKey: `payment-invoice/${data.reference}`,
+  });
+};
+
+// Returns true if the email was accepted by the Resend API.
 const notifyWorkspaceInvite = (to, data) => send(to, tpl.workspaceInvitation(data)).catch(() => false);
 
-module.exports = { notifyWorkspaceInvite, handleSignIn, handleSignUp, notifySubscriptionActive, notifySubscriptionCanceled, notifyPaymentFailed };
+module.exports = {
+  notifyWorkspaceInvite,
+  handleSignIn,
+  handleSignUp,
+  notifySubscriptionActive,
+  notifySubscriptionCanceled,
+  notifyPaymentFailed,
+  notifyPaymentInvoice,
+};

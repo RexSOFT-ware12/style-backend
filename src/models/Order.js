@@ -20,6 +20,7 @@ const orderSchema = new Schema(
     status: { type: String, enum: ["pending", "paid"], default: "pending" },
     paystackReference: { type: String, default: null },
     paidAt: { type: Date, default: null },
+    invoiceEmailSentAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

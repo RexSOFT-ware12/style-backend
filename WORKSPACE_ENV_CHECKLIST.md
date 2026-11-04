@@ -8,7 +8,8 @@ Main Node backend:
 - `SECRETS_ENCRYPTION_KEY` (keep stable; encrypts Paystack reusable authorization data)
 - `GOOGLE_CLIENT_ID`
 - `RESEND_API_KEY` (Resend API key; keep server-side)
-- `RESEND_FROM_EMAIL` (sender on a domain verified in Resend, e.g. `FabricNow <support@support.fabricnow.pro>`)
+- `RESEND_FROM_EMAIL` (general sender on a domain verified in Resend, e.g. `FabricNow <reply@support.fabricnow.pro>`)
+- `RESEND_INVOICE_FROM_EMAIL` (optional invoice sender on a verified Resend domain, e.g. `FabricNow Invoices <invoices@invoice.fabricnow.pro>`; defaults to `RESEND_FROM_EMAIL`)
 - `SUPPORT_EMAIL` (optional; support inbox for contact requests and sign-in alert copies)
 - `CONTACT_EMAIL` (optional; recipient for `POST /api/contact`, defaults to `SUPPORT_EMAIL`)
 - `PAYSTACK_SECRET_KEY`
