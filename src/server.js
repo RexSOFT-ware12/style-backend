@@ -27,6 +27,7 @@ const patternLibraryRouter = require("./routes/patternLibrary");
 const bodyMeasurementsRouter = require("./routes/bodyMeasurements");
 const contactRouter = require("./routes/contact");
 const { verifyWebhookSignature } = require("./lib/paystack");
+const { handleFabricPayEvent } = require("./routes/fabricPayEvents");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -70,6 +71,12 @@ app.post("/api/paystack/webhook", express.raw({ type: "application/json" }), asy
     res.status(500).json({ error: "Paystack webhook processing failed." });
   }
 });
+
+// Central payment gateway (FabricNow Pay) forwards every Paystack event for this app here,
+// signed with FABRIC_PAY_EVENT_SECRET. Must stay BEFORE express.json() (needs raw bytes).
+// Once Paystack's dashboard webhook points at the gateway, the legacy /api/paystack/webhook
+// above stops receiving traffic; keep it until the cutover is verified, then remove it.
+app.post("/api/payments/paystack-events", express.raw({ type: "application/json" }), handleFabricPayEvent);
 
 // Tailor Tools boards can carry a compressed photo underlay (stored in board.layers), so allow a bigger body on that route only.
 app.use("/api/tailor-tools", express.json({ limit: "6mb" }));
@@ -122,7 +129,8 @@ app.get("/", (req, res) => {
       "DELETE /api/billing/api-keys/:id        (auth required) — revoke an API key",
       "GET    /api/billing/api-key-status      (x-api-key header) — used by garment-service",
       "POST   /api/billing/api-usage           (x-api-key header) — used by garment-service",
-      "POST   /api/paystack/webhook            (configured in Paystack dashboard)",
+      "POST   /api/paystack/webhook            (legacy: direct from Paystack; replaced by gateway below)",
+      "POST   /api/payments/paystack-events    (central FabricNow Pay gateway, HMAC signed)",
       "GET    /api/inspiration-library        (auth required) — shared Pinterest inspiration library, visible to all companies",
       "GET    /api/inspiration-library/facets (auth required) — filter values (categories, regions, genders)",
       "GET    /api/admin/*                    (admin only) users, companies, block, manual API plans, credits, provider keys",

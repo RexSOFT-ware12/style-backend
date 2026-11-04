@@ -114,6 +114,10 @@ async function getPlan(planCode, expectedAmount) {
   return plan;
 }
 
+// Every Paystack transaction created here is tagged so the central gateway (FabricNow Pay)
+// can route its webhook events back to this app. Paystack has ONE webhook per account.
+const APPLICATION = "style";
+
 function initializeTransaction({ email, amount, planCode, callbackUrl, metadata }) {
   return request("/transaction/initialize", {
     method: "POST",
@@ -123,7 +127,7 @@ function initializeTransaction({ email, amount, planCode, callbackUrl, metadata 
       currency: getCurrency(),
       ...(planCode ? { plan: planCode } : {}),
       callback_url: callbackUrl,
-      metadata,
+      metadata: { application: APPLICATION, ...metadata },
     },
   });
 }
@@ -141,7 +145,7 @@ function chargeAuthorization({ email, authorizationCode, amount, reference, meta
       amount: String(amount),
       currency: getCurrency(),
       reference,
-      metadata,
+      metadata: { application: APPLICATION, ...metadata },
     },
   });
 }
