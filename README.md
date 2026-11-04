@@ -47,7 +47,7 @@ Create monthly GHS plans in the Paystack dashboard with these amounts and set th
 
 - Premium: GHS 350.13/month (`PAYSTACK_PREMIUM_PLAN_CODE`, `PAYSTACK_PREMIUM_AMOUNT`)
 - API Starter: GHS 934.00/month (`PAYSTACK_API_STARTER_PLAN_CODE`, `PAYSTACK_API_STARTER_AMOUNT`)
-- API Growth: GHS 35,025.00/month (`PAYSTACK_API_GROWTH_PLAN_CODE`, `PAYSTACK_API_GROWTH_AMOUNT`)
+- API Growth: GHS 33,730.80/month (`PAYSTACK_API_GROWTH_PLAN_CODE`, `PAYSTACK_API_GROWTH_AMOUNT`)
 
 Set `PAYSTACK_SECRET_KEY`, `PAYSTACK_CURRENCY=GHS`, and the two overage amounts: GHS 572.08 per segmented image (`PAYSTACK_API_OVERAGE_SEGMENTED_AMOUNT`) and GHS 233.50 per background-removal-only image (`PAYSTACK_API_OVERAGE_BGONLY_AMOUNT`). API overages are charged individually against the authorization from the subscriber's first checkout. Product catalog prices remain USD and are converted to GHS for checkout using the fixed `PAYSTACK_USD_GHS_RATE=11.68`.
 
