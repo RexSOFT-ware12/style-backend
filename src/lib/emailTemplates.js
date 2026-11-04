@@ -24,7 +24,8 @@ const BRAND = {
 
 const FRONTEND_URL = () => (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/$/, "");
 const WORKSPACE_URL = () => (process.env.WORKSPACE_URL || `${FRONTEND_URL()}/workspace`).replace(/\/$/, "");
-const SUPPORT = () => process.env.SMTP_USER || "support@fabricnow.pro";
+const SUPPORT = () =>
+  process.env.SUPPORT_EMAIL || process.env.CONTACT_EMAIL || "support@fabricnow.pro";
 
 const esc = (v) =>
   String(v ?? "")

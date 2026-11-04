@@ -7,7 +7,10 @@ Main Node backend:
 - `JWT_SECRET` (long random value)
 - `SECRETS_ENCRYPTION_KEY` (keep stable; encrypts Paystack reusable authorization data)
 - `GOOGLE_CLIENT_ID`
-- `CONTACT_EMAIL` (optional; recipient for `POST /api/contact`, defaults to `SMTP_USER`)
+- `RESEND_API_KEY` (Resend API key; keep server-side)
+- `RESEND_FROM_EMAIL` (sender on a domain verified in Resend, e.g. `FabricNow <support@support.fabricnow.pro>`)
+- `SUPPORT_EMAIL` (optional; support inbox for contact requests and sign-in alert copies)
+- `CONTACT_EMAIL` (optional; recipient for `POST /api/contact`, defaults to `SUPPORT_EMAIL`)
 - `PAYSTACK_SECRET_KEY`
 - `PAYSTACK_CURRENCY=GHS`
 - `PAYSTACK_PREMIUM_PLAN_CODE` (monthly GHS 350.13)

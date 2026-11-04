@@ -53,7 +53,8 @@ async function handleSignIn(req, user, method = "Email & password") {
     if (!shouldAlert) return;
 
     const deviceSeen = known.some((k) => k.deviceKey === deviceKey);
-    const supportEmail = process.env.SMTP_USER || "support@fabricnow.pro";
+    const supportEmail =
+      process.env.SUPPORT_EMAIL || process.env.CONTACT_EMAIL || "support@fabricnow.pro";
     await send(
       user.email,
       tpl.signinAlert({ name: user.name, info, when: now, method, firstOfKind: deviceSeen ? "location" : "device" }),

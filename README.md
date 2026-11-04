@@ -26,6 +26,13 @@ npm start
 ## Production
 Run the Node API and Fabric Now Python worker as separate services. The Node API is the public service; the Python worker is protected by `FABRIC_NOW_INTERNAL_SECRET`.
 
+Transactional email (sign-in alerts, welcome/billing notices, and contact form)
+is sent through Resend's HTTPS API, so the backend does not need SMTP access.
+Set `RESEND_API_KEY` and a `RESEND_FROM_EMAIL` address on your verified
+Resend domain. The default sender is `FabricNow <support@support.fabricnow.pro>`;
+set `SUPPORT_EMAIL` to the inbox that should receive contact submissions and
+sign-in alert copies.
+
 The authenticated workspace copilot (`POST /api/assistant/workspace`) uses OpenAI. Set `OPENAI_API_KEY` on the Node backend; `OPENAI_ASSISTANT_MODEL` is optional and defaults to `gpt-4o-mini`. Other Gemini-powered tools remain unchanged.
 
 Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`

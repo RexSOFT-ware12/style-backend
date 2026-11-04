@@ -41,7 +41,8 @@ router.post("/", contactRateLimit, async (req, res) => {
     return res.status(503).json({ error: "The contact form is temporarily unavailable. Please try again later." });
   }
 
-  const to = process.env.CONTACT_EMAIL || process.env.SMTP_USER || "support@fabricnow.pro";
+  const to =
+    process.env.CONTACT_EMAIL || process.env.SUPPORT_EMAIL || "support@fabricnow.pro";
   const text = [
     `Name: ${name}`,
     `Email: ${email}`,
