@@ -168,7 +168,7 @@ router.post("/patterns", requireAuth, upload.fields([
     const form = new FormData();
     addFile(form, req.files.file[0]);
     if (req.files.swatch?.[0]) addFile(form, req.files.swatch[0]);
-    for (const key of ["garment", "notes", "lining"]) {
+    for (const key of ["garment", "notes", "lining", "variants"]) {
       if (req.body[key] !== undefined) form.append(key, String(req.body[key]));
     }
     await relayJson(res, await workerFetch(req, "/api/jobs", { method: "POST", body: form }), normalizeJob);
@@ -182,7 +182,7 @@ router.post("/patterns/batch", requireAuth, uploadMany.array("files", 10), async
     if (!req.files?.length) return res.status(400).json({ error: "Add at least one garment photo." });
     const form = new FormData();
     req.files.forEach((f) => addFile(form, f));
-    for (const key of ["garment", "notes", "lining"]) {
+    for (const key of ["garment", "notes", "lining", "variants"]) {
       if (req.body[key] !== undefined) form.append(key, String(req.body[key]));
     }
     await relayJson(res, await workerFetch(req, "/api/jobs/batch", { method: "POST", body: form }),
