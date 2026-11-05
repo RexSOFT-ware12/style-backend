@@ -4,6 +4,7 @@ const {requireCompany,requirePermission}=require('../middleware/company');
 const TailorToolBoard=require('../models/TailorToolBoard');
 const WorkspaceProject=require('../models/WorkspaceProject');
 const {askTailorTools}=require('../lib/gemini');
+const {askDrapeStyle}=require('../lib/drapeStyle');
 const User=require('../models/User');
 const ApiSubscription=require('../models/ApiSubscription');
 const {getApiEntitlement}=require('../lib/apiEntitlement');
@@ -91,6 +92,12 @@ async function consumeDownload(userId){
 const LIMIT_BODY={error:`You have used your ${FREE_DOWNLOADS} free downloads. Upgrade to an API Growth plan for unlimited downloads.`,code:'API_SUBSCRIPTION_REQUIRED',limit:FREE_DOWNLOADS,remaining:0};
 router.get('/download-status',async(req,res,next)=>{try{res.json(await downloadState(uid(req)))}catch(e){next(e)}});
 router.post('/download-pass',async(req,res,next)=>{try{const st=await consumeDownload(uid(req));if(!st)return res.status(402).json(LIMIT_BODY);res.json(st)}catch(e){next(e)}});
+// Picks drape settings (silhouette, ease, folds) for the 3D try-on. Always answers 200: with no AI result the browser uses its own defaults.
+router.post('/drape-style',async(req,res,next)=>{try{
+  const b=req.body||{},s=b.summary&&typeof b.summary==='object'?b.summary:null;
+  if(!s)return res.status(400).json({error:'summary is required'});
+  res.json(await askDrapeStyle(s));
+}catch(e){next(e)}});
 router.get('/boards/:id/export.svg',async(req,res,next)=>{try{
   const b=await TailorToolBoard.findOne({_id:req.params.id,companyId:cid(req)});
   if(!b)return res.status(404).send('Board not found');
