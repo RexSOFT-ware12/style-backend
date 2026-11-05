@@ -4,6 +4,9 @@ const {requireCompany,requirePermission}=require('../middleware/company');
 const TailorToolBoard=require('../models/TailorToolBoard');
 const WorkspaceProject=require('../models/WorkspaceProject');
 const {askTailorTools}=require('../lib/gemini');
+const User=require('../models/User');
+const ApiSubscription=require('../models/ApiSubscription');
+const {getApiEntitlement}=require('../lib/apiEntitlement');
 const router=express.Router();
 router.use(requireAuth,requireCompany);
 const cid=req=>req.company._id, uid=req=>req.user.sub;
@@ -53,14 +56,8 @@ function shapeToSvg(o){
     const pts=o.points.map(p=>[n2(p[0]),n2(p[1])]);
     const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),minX=Math.min(...xs),minY=Math.min(...ys),w=Math.max(...xs)-minX,h=Math.max(...ys)-minY;
     const fmt=a=>a.map(p=>p.map(n2).join(',')).join(' ');
-    let out=`<polygon points="${fmt(pts)}" fill="none" stroke="#111" stroke-width="0.6"/>`;
-    const allow=o.allowance===undefined?1:Number(o.allowance);
-    if(allow>0){let sa=offsetPoly(pts,allow);if(o.fold)sa=sa.map(([x,y])=>[Math.max(minX,x),y]);out+=`<polygon points="${fmt(sa)}" fill="none" stroke="#E66239" stroke-width="0.3" stroke-dasharray="1.6 1.2"/>`}
-    if(o.fold)out+=`<line x1="${minX}" y1="${n2(minY+3)}" x2="${minX}" y2="${n2(minY+h-3)}" stroke="#111" stroke-width="0.4" marker-start="url(#a)" marker-end="url(#a)"/>`;
-    const cx=n2(minX+w/2+(o.fold?1.5:0)),cy=n2(minY+h/2);
-    const nm=String(o.name||'Piece'),fs=Math.min(3,Math.max(1.5,w/((nm.length*.62)||1))),tiny=h<14||w<14;
-    out+=`<text x="${cx}" y="${n2(tiny?cy+fs*.35-(h<14?2.2:0):cy-1)}" font-size="${n2(fs)}" font-weight="700" text-anchor="middle" fill="#111">${escXml(nm)}</text>`;
-    if(!tiny){out+=`<text x="${cx}" y="${n2(cy+2.6)}" font-size="2" text-anchor="middle" fill="#555">${escXml(`Cut ${o.cut||1}${o.fold?' | on fold':''}`)}</text><text x="${cx}" y="${n2(cy+5.2)}" font-size="2" text-anchor="middle" fill="#777">${escXml(`${n2(w)} x ${n2(h)} cm`)}</text>`}
+    const out=`<polygon points="${fmt(pts)}" fill="none" stroke="#111" stroke-width="0.6"/>`;
+    // Outline only: no seam-allowance border and no name/size labels in the export.
     return out;
   }
   if(['line','seam','stitch','grainline','measure'].includes(t)){
@@ -73,9 +70,31 @@ function shapeToSvg(o){
   if(t==='text'||t==='annotation')return `<text x="${n2(o.x)}" y="${n2(o.y)}" font-size="${Number(o.size)||3}" fill="#111">${escXml(o.text||'')}</text>`;
   return '';
 }
+
+// ---- Download allowance: 3 free downloads per account; unlimited on API Growth (or Enterprise). ----
+const FREE_DOWNLOADS=3;
+async function downloadState(userId){
+  const [apiSub,user]=await Promise.all([ApiSubscription.findOne({userId}),User.findById(userId).select('tailorDownloadsUsed')]);
+  const ent=getApiEntitlement(apiSub);
+  const unlimited=!!(ent.hasAccess&&['growth','enterprise'].includes(ent.tier));
+  const used=user?.tailorDownloadsUsed||0;
+  return {unlimited,used,limit:FREE_DOWNLOADS,remaining:unlimited?null:Math.max(0,FREE_DOWNLOADS-used)};
+}
+// Counts one download (atomic, so two quick clicks can't slip past the limit). Returns the new state, or null when out of downloads.
+async function consumeDownload(userId){
+  const st=await downloadState(userId);
+  if(st.unlimited)return st;
+  const u=await User.findOneAndUpdate({_id:userId,$or:[{tailorDownloadsUsed:{$lt:FREE_DOWNLOADS}},{tailorDownloadsUsed:{$exists:false}}]},{$inc:{tailorDownloadsUsed:1}},{new:true}).select('tailorDownloadsUsed');
+  if(!u)return null;
+  return {unlimited:false,used:u.tailorDownloadsUsed,limit:FREE_DOWNLOADS,remaining:Math.max(0,FREE_DOWNLOADS-u.tailorDownloadsUsed)};
+}
+const LIMIT_BODY={error:`You have used your ${FREE_DOWNLOADS} free downloads. Upgrade to an API Growth plan for unlimited downloads.`,code:'API_SUBSCRIPTION_REQUIRED',limit:FREE_DOWNLOADS,remaining:0};
+router.get('/download-status',async(req,res,next)=>{try{res.json(await downloadState(uid(req)))}catch(e){next(e)}});
+router.post('/download-pass',async(req,res,next)=>{try{const st=await consumeDownload(uid(req));if(!st)return res.status(402).json(LIMIT_BODY);res.json(st)}catch(e){next(e)}});
 router.get('/boards/:id/export.svg',async(req,res,next)=>{try{
   const b=await TailorToolBoard.findOne({_id:req.params.id,companyId:cid(req)});
   if(!b)return res.status(404).send('Board not found');
+  if(!await consumeDownload(uid(req)))return res.status(402).json(LIMIT_BODY);
   const shapes=(b.operations||[]).map(o=>{try{return shapeToSvg(o)}catch{return ''}}).join('');
   const svg=`<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${BOARD_W}cm" height="${BOARD_H}cm" viewBox="0 0 ${BOARD_W} ${BOARD_H}"><defs><marker id="a" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L6 3L0 6z" fill="#111"/></marker></defs><rect width="100%" height="100%" fill="white"/>${shapes}</svg>`;
   res.set('Content-Type','image/svg+xml');

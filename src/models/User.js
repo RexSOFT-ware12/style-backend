@@ -26,6 +26,8 @@ const userSchema = new Schema(
       default: () => new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
     },
     plan: { type: String, enum: ["free", "premium"], default: "free" },
+    // Tailor Tools downloads used. Everyone gets 3 free; API Growth/Enterprise is unlimited.
+    tailorDownloadsUsed: { type: Number, default: 0, min: 0 },
     // Provider status copied from Paystack subscription and invoice events.
     subscriptionStatus: {
       type: String,
