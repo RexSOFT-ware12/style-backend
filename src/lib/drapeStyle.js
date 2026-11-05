@@ -34,26 +34,37 @@ async function askDrapeStyle(summary) {
   if (cache.has(key)) return { style: cache.get(key), source: "cache" };
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return { style: null, source: "default", reason: "OPENAI_API_KEY is not configured" };
+  const wanted = process.env.OPENAI_DRAPE_MODEL || process.env.OPENAI_ASSISTANT_MODEL || "gpt-4o-mini";
+  const attempt = (model, json) => fetch(URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(15_000),
+    body: JSON.stringify({
+      model, temperature: 0.2, max_tokens: 220,
+      ...(json ? { response_format: { type: "json_object" } } : {}),
+      messages: [{ role: "system", content: SYSTEM }, { role: "user", content: key }],
+    }),
+  });
   let res;
   try {
-    res = await fetch(URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(12_000),
-      body: JSON.stringify({
-        model: process.env.OPENAI_DRAPE_MODEL || process.env.OPENAI_ASSISTANT_MODEL || "gpt-4o-mini",
-        temperature: 0.2,
-        max_tokens: 220,
-        response_format: { type: "json_object" },
-        messages: [{ role: "system", content: SYSTEM }, { role: "user", content: key }],
-      }),
-    });
+    res = await attempt(wanted, true);
+    if (res.status === 400) res = await attempt(wanted, false);                                   // some models refuse JSON mode
+    if (res.status === 404 && wanted !== "gpt-4o-mini") res = await attempt("gpt-4o-mini", true); // unknown model name in the env
   } catch {
     return { style: null, source: "default", reason: "OpenAI could not be reached" };
   }
-  if (!res.ok) return { style: null, source: "default", reason: `OpenAI returned ${res.status}` };
+  if (!res.ok) {
+    let detail = "";
+    try { const e = await res.json(); detail = String(e?.error?.message || e?.error?.code || "").slice(0, 160); } catch { /* no body */ }
+    console.warn(`[drape-style] OpenAI ${res.status}: ${detail}`);
+    return { style: null, source: "default", reason: `OpenAI returned ${res.status}${detail ? ` (${detail})` : ""}` };
+  }
   let parsed = {};
-  try { const data = await res.json(); parsed = JSON.parse(data.choices?.[0]?.message?.content || "{}"); } catch { /* fall through to default */ }
+  try {
+    const data = await res.json();
+    const text = String(data.choices?.[0]?.message?.content || "");
+    parsed = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1) || "{}");
+  } catch { /* fall through to default */ }
   const style = cleanStyle(parsed);
   if (!Object.keys(style).length) return { style: null, source: "default", reason: "No usable answer" };
   if (cache.size > 300) cache.delete(cache.keys().next().value);
