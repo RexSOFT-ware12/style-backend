@@ -5,6 +5,10 @@ const path = require('path');
 const crypto = require('crypto');
 const PatternRequest = require('../models/PatternRequest');
 const User = require('../models/User');
+const ApiSubscription = require('../models/ApiSubscription');
+const { getApiEntitlement } = require('../lib/apiEntitlement');
+const { isOverAllowance } = require('../lib/apiCredits');
+const { reportOverageUnit } = require('../lib/paystackOverages');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 const ROOT = path.resolve(process.env.PATTERN_REQUEST_UPLOAD_DIR || path.join(process.cwd(), 'uploads', 'pattern-requests'));
@@ -20,9 +24,37 @@ const sendStored = (res, file, name) => { if (!file || !fs.existsSync(file)) ret
 router.post('/', requireAuth, imageUpload.fields([{ name: 'file', maxCount: 1 }, { name: 'swatch', maxCount: 1 }]), async (req, res, next) => {
   try {
     const image = req.files?.file?.[0]; if (!image) return res.status(400).json({ error: 'A garment photo is required.' });
+    // Manual production requests still consume one API Growth image-equivalent unit.
+    // They do not call OpenAI; this is the workspace's metered production-request allowance.
+    const sub = await ApiSubscription.findOne({ userId: req.user.sub });
+    const entitlement = getApiEntitlement(sub);
+    if (!entitlement.hasAccess) {
+      for (const f of [...(req.files?.file || []), ...(req.files?.swatch || [])]) fs.unlink(f.path, () => {});
+      return res.status(402).json({ error: 'An active API subscription is required to submit a manual pattern request.', code: 'API_SUBSCRIPTION_REQUIRED' });
+    }
     const variants = (() => { try { return JSON.parse(req.body.variants || '{}'); } catch { return {}; } })();
     const r = await PatternRequest.create({ userId: req.user.sub, title: String(req.body.title || req.body.garment || 'Garment pattern request').slice(0, 140), garment: String(req.body.garment || 'Not specified').slice(0, 120), lining: String(req.body.lining || 'none'), notes: String(req.body.notes || '').slice(0, 5000), formats: Array.isArray(variants.formats) ? variants.formats : [], extraCuts: !!variants.extraCuts, sourceImage: image.path, sourceImageName: image.originalname, swatchImage: req.files?.swatch?.[0]?.path || '', swatchImageName: req.files?.swatch?.[0]?.originalname || '' });
-    res.status(201).json({ request: safe(r), message: 'Your garment request has been submitted.' });
+    try {
+      const updated = await ApiSubscription.findOneAndUpdate(
+        { _id: sub._id },
+        { $inc: { 'usage.segmentedCount': 1 } },
+        { new: true }
+      );
+      const usedAfter = (updated.usage?.segmentedCount || 0) + (updated.usage?.bgOnlyCount || 0);
+      const usedBefore = usedAfter - 1;
+      const billedAsOverage = isOverAllowance(updated, usedBefore);
+      const overageCharged = billedAsOverage
+        ? await reportOverageUnit(updated, 'segmented', `manual-pattern-${r._id}`)
+        : false;
+      return res.status(201).json({
+        request: safe(r), message: 'Your garment request has been submitted.',
+        usage: { imagesDeducted: 1, usedThisPeriod: usedAfter, quota: updated.quota, rolloverCredits: updated.rolloverCredits || 0, billedAsOverage, overageCharged },
+      });
+    } catch (usageError) {
+      await PatternRequest.deleteOne({ _id: r._id }).catch(() => {});
+      for (const f of [...(req.files?.file || []), ...(req.files?.swatch || [])]) fs.unlink(f.path, () => {});
+      throw usageError;
+    }
   } catch (e) { next(e); }
 });
 router.get('/mine', requireAuth, async (req, res, next) => { try { const rows = await PatternRequest.find({ userId: req.user.sub }).sort({ createdAt: -1 }).limit(100); res.json({ requests: rows.map(safe) }); } catch (e) { next(e); } });
