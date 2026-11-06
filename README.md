@@ -65,3 +65,7 @@ Existing Stripe subscriptions are not migrated or canceled automatically. Stripe
 
 ## FabricNow Workspace AI update
 The workspace pattern worker now supports OpenAI/Claude vision selection, Claude QA, Basic-plan-compatible exports with manifest metadata, African garment generation, fabric/print generation, mockups, technical flats, lookbooks, Aso-Ebi concepts, cutting-layout concepts, and AI product listing generation. Configure secrets only through environment variables.
+
+### Tailor Tools AI provider
+
+Tailor Tools (`/api/tailor-tools/ai`, `/stitch-plan`, and `/cutting-layout`) uses OpenAI, not Gemini. Set `OPENAI_API_KEY` in the backend environment. Optionally set `OPENAI_TAILOR_TOOLS_MODEL`; by default it reuses `OPENAI_ASSISTANT_MODEL` and falls back to `gpt-4o-mini`. No Gemini prepayment balance is needed for these Tailor Tools endpoints.

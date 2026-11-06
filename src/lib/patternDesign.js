@@ -4,11 +4,12 @@
  *    The app draws the flat sketch from that spec, so the model only ever picks from a fixed vocabulary.
  *  - askFabricFromImage: reads a photo of a fabric and fills in a fabric record.
  *  - makeFabricSwatch: asks the image model for a clean, flat, square swatch of the fabric in a photo.
- * Uses the same Gemini REST conventions as lib/gemini.js and lib/poseTool.js.
+ * Uses the shared OpenAI API key; no Gemini dependency.
  */
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
-const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image';
-const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
+const OPENAI_IMAGES_EDIT_URL = 'https://api.openai.com/v1/images/edits';
+const OPENAI_MODEL = process.env.OPENAI_FABRIC_MODEL || process.env.OPENAI_ASSISTANT_MODEL || 'gpt-4o-mini';
+const OPENAI_IMAGE_MODEL = process.env.OPENAI_FABRIC_IMAGE_MODEL || 'gpt-image-1';
 
 /* Must match src/pages/patterns/flats.js in the frontend. */
 const VOCAB = {
@@ -54,7 +55,7 @@ function sanitizeSpec(s = {}) {
 const cleanText = (v, max) => String(v ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 
 function aiError(status, body) {
-  const e = new Error(`Gemini API error ${status}: ${String(body).slice(0, 300)}`);
+  const e = new Error(`OpenAI API error ${status}: ${String(body).slice(0, 300)}`);
   e.status = status === 429 ? 429 : 503; e.code = 'AI_UNAVAILABLE';
   e.publicMessage = status === 429 ? 'The AI is busy right now. Please try again in a moment.' : 'The AI service is temporarily unavailable. Please try again shortly.';
   return e;
@@ -65,21 +66,19 @@ function parseDataUrl(src, maxChars = 4_000_000) {
   if (src.length > maxChars) { const e = new Error('That image is too large.'); e.status = 413; e.publicMessage = 'That image is too large. Try a smaller one.'; throw e; }
   return { mime: m[1], data: m[2] };
 }
-async function geminiText({ system, parts, maxTokens = 1500 }) {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) { const e = new Error('GEMINI_API_KEY is not configured on the server'); e.status = 503; e.publicMessage = 'AI is not set up on this server yet.'; throw e; }
-  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 45_000);
+async function openaiJson({ system, text, imageDataUrl = null, maxTokens = 1500 }) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) { const e = new Error('OPENAI_API_KEY is not configured on the server'); e.status = 503; e.publicMessage = 'AI is not set up on this server yet.'; throw e; }
+  const content = [{ type: 'text', text }];
+  if (imageDataUrl) content.push({ type: 'image_url', image_url: { url: imageDataUrl, detail: 'high' } });
+  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 60_000);
   try {
-    const res = await fetch(`${BASE}/${GEMINI_MODEL}:generateContent?key=${key}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl.signal,
-      body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts }], generationConfig: { maxOutputTokens: maxTokens, responseMimeType: 'application/json', temperature: 0.4, thinkingConfig: { thinkingBudget: 0 } } }),
-    });
+    const res = await fetch(OPENAI_CHAT_URL, { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, signal: ctl.signal,
+      body: JSON.stringify({ model: OPENAI_MODEL, messages: [{ role: 'system', content: system }, { role: 'user', content }], response_format: { type: 'json_object' }, max_tokens: maxTokens, temperature: 0.2 }) });
     if (!res.ok) throw aiError(res.status, await res.text().catch(() => ''));
-    const data = await res.json();
-    const raw = (data?.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('');
-    const cleaned = raw.trim().replace(/^```json\s*|^```\s*|```$/g, '').trim();
-    try { const out = JSON.parse(cleaned); if (!out || typeof out !== 'object') throw new Error('bad'); return out; }
-    catch { const e = new Error('Unreadable AI response'); e.status = 502; e.publicMessage = 'The AI gave an answer we could not read. Please try again.'; throw e; }
+    const data = await res.json(); const raw = data?.choices?.[0]?.message?.content || '';
+    try { const out = JSON.parse(raw); if (!out || typeof out !== 'object') throw new Error('bad'); return out; }
+    catch { const e = new Error('Unreadable OpenAI response'); e.status = 502; e.publicMessage = 'The AI gave an answer we could not read. Please try again.'; throw e; }
   } catch (e) {
     if (e.name === 'AbortError') { const t = new Error('AI timed out'); t.status = 504; t.publicMessage = 'The AI took too long to answer. Please try again.'; throw t; }
     throw e;
@@ -101,9 +100,9 @@ Reply with ONLY JSON: {"name":"short design name","category":"tops|dresses|skirt
 async function askPatternDesign({ prompt = '', referenceSpec = null, referenceName = '', imageDataUrl = null, size = 'M' }) {
   const text = cleanText(prompt, 800);
   if (!text && !imageDataUrl) { const e = new Error('Describe the design or add a photo.'); e.status = 400; e.publicMessage = e.message; throw e; }
-  const parts = [{ text: `REQUEST: ${text || '(no text, use the photo)'}\nSIZE: ${cleanText(size, 12)}${referenceSpec ? `\nREFERENCE DESIGN "${cleanText(referenceName, 80)}": ${JSON.stringify(sanitizeSpec(referenceSpec))}` : ''}` }];
-  if (imageDataUrl) { const { mime, data } = parseDataUrl(imageDataUrl); parts.push({ inlineData: { mimeType: mime, data } }); }
-  const out = await geminiText({ system: DESIGN_SYSTEM, parts, maxTokens: 900 });
+  if (imageDataUrl) parseDataUrl(imageDataUrl);
+  const requestText = `REQUEST: ${text || '(no text, use the photo)'}\nSIZE: ${cleanText(size, 12)}${referenceSpec ? `\nREFERENCE DESIGN "${cleanText(referenceName, 80)}": ${JSON.stringify(sanitizeSpec(referenceSpec))}` : ''}`;
+  const out = await openaiJson({ system: DESIGN_SYSTEM, text: requestText, imageDataUrl, maxTokens: 900 });
   const spec = sanitizeSpec(out.spec);
   const fallbackCat = spec.family === 'dress' ? 'dresses' : spec.family === 'skirt' ? 'skirts' : spec.family === 'trousers' ? 'trousers' : spec.family === 'jumpsuit' ? 'dresses' : 'tops';
   return {
@@ -122,9 +121,8 @@ Reply with ONLY JSON:
 {"name":"short descriptive name, e.g. Indigo adire cotton","pattern":"print or weave name if you can tell (Ankara, Kente, Adire, Bogolan, Kitenge, Shweshwe, lace, stripe, plain...), else empty","color":"main colour name","composition":"best-guess fibre content or empty","weightGsm":number or null,"widthCm":null,"origin":"only if the print or weave clearly indicates one, else empty","palette":["#rrggbb up to 5 dominant colours"],"repeatCm":number or null,"suggestedUses":["up to 4 garment uses"],"notes":"1 to 2 sentences: handfeel/drape you would expect, plus that the details are AI estimates"}`;
 
 async function askFabricFromImage(imageDataUrl, hint = '') {
-  const { mime, data } = parseDataUrl(imageDataUrl);
-  const parts = [{ text: `Describe this fabric for my library.${hint ? ` Designer's note: ${cleanText(hint, 200)}` : ''}` }, { inlineData: { mimeType: mime, data } }];
-  const out = await geminiText({ system: FABRIC_SYSTEM, parts, maxTokens: 700 });
+  parseDataUrl(imageDataUrl);
+  const out = await openaiJson({ system: FABRIC_SYSTEM, text: `Describe this fabric for my library.${hint ? ` Designer's note: ${cleanText(hint, 200)}` : ''}`, imageDataUrl, maxTokens: 700 });
   const num = (v, lo, hi) => { const n = Number(v); return Number.isFinite(n) && n >= lo && n <= hi ? Math.round(n) : undefined; };
   return {
     name: cleanText(out.name, 80) || 'Untitled fabric',
@@ -139,26 +137,23 @@ async function askFabricFromImage(imageDataUrl, hint = '') {
 
 /* Asks the image model for a clean square swatch. Returns { dataUrl } or { warning } (never throws for a missing image). */
 async function makeFabricSwatch(imageDataUrl) {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) { const e = new Error('GEMINI_API_KEY is not configured on the server'); e.status = 503; e.publicMessage = 'AI is not set up on this server yet.'; throw e; }
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) { const e = new Error('OPENAI_API_KEY is not configured on the server'); e.status = 503; e.publicMessage = 'AI is not set up on this server yet.'; throw e; }
   const { mime, data } = parseDataUrl(imageDataUrl);
-  const prompt = 'Recreate the fabric shown in this photo as a flat, evenly lit, perfectly square, front-on swatch that fills the whole frame. Keep the exact print, colours, scale of the motifs and weave. Remove folds, creases, shadows, hands, backgrounds and any text. Output one image only.';
-  const call = (generationConfig) => fetch(`${BASE}/${GEMINI_IMAGE_MODEL}:generateContent?key=${key}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }, { inlineData: { mimeType: mime, data } }] }], generationConfig }),
-  });
-  let res = await call({ responseModalities: ['TEXT', 'IMAGE'] });
-  if (res.status === 400) res = await call(undefined);
+  const bytes = Buffer.from(data, 'base64');
+  const ext = mime === 'image/jpeg' ? 'jpg' : mime === 'image/webp' ? 'webp' : 'png';
+  const form = new FormData();
+  form.append('model', OPENAI_IMAGE_MODEL);
+  form.append('prompt', 'Create a clean square textile swatch based on the supplied fabric photo. Preserve its actual print, colours, motif scale and weave as faithfully as possible. Flatten perspective and remove folds, creases, shadows, hands, background and text. The result must be a seamless-looking flat fabric sample, evenly lit, edge-to-edge, with no borders or labels.');
+  form.append('size', '1024x1024');
+  form.append('image', new Blob([bytes], { type: mime }), `fabric-reference.${ext}`);
+  let res;
+  try { res = await fetch(OPENAI_IMAGES_EDIT_URL, { method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: form, signal: AbortSignal.timeout(120_000) }); }
+  catch (cause) { const e = new Error('Could not connect to OpenAI image generation'); e.status = 503; e.publicMessage = 'The fabric swatch service is temporarily unavailable. Please try again.'; e.cause = cause; throw e; }
   if (!res.ok) throw aiError(res.status, await res.text().catch(() => ''));
-  const json = await res.json();
-  const cand = json?.candidates?.[0], parts = cand?.content?.parts || [];
-  const inline = (parts.find((p) => p.inlineData || p.inline_data) || {});
-  const img = inline.inlineData || inline.inline_data;
-  if (!img?.data) {
-    const why = cand?.finishReason === 'SAFETY' || json?.promptFeedback?.blockReason ? 'The AI declined to redraw this image.' : "The AI didn't return a swatch this time.";
-    return { warning: why };
-  }
-  return { dataUrl: `data:${img.mimeType || img.mime_type || 'image/png'};base64,${img.data}` };
+  const json = await res.json(); const b64 = json?.data?.[0]?.b64_json;
+  if (!b64) return { warning: 'OpenAI did not return a swatch image. Please try again.' };
+  return { dataUrl: `data:image/png;base64,${b64}` };
 }
 
 module.exports = { VOCAB, CATEGORIES, sanitizeSpec, cleanText, parseDataUrl, askPatternDesign, askFabricFromImage, makeFabricSwatch };
