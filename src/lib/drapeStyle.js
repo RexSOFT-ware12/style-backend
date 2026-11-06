@@ -32,8 +32,11 @@ const cache = new Map(); // description -> style, so the same pattern is never a
 async function askDrapeStyle(summary) {
   const key = JSON.stringify(summary).slice(0, 4000);
   if (cache.has(key)) return { style: cache.get(key), source: "cache" };
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return { style: null, source: "default", reason: "OPENAI_API_KEY is not configured" };
+  // Render env values are often pasted with quotes or a trailing newline, which OpenAI answers with a 401.
+  const apiKey = String(process.env.OPENAI_API_KEY || "").trim().replace(/^["']|["']$/g, "");
+  if (!apiKey) { console.warn("[drape-style] OPENAI_API_KEY is not set on this server"); return { style: null, source: "default", reason: "OPENAI_API_KEY is not configured" }; }
+  if (!apiKey.startsWith("sk-")) console.warn("[drape-style] OPENAI_API_KEY does not start with sk- ; check it was pasted correctly");
+  const started = Date.now();
   const wanted = process.env.OPENAI_DRAPE_MODEL || process.env.OPENAI_ASSISTANT_MODEL || "gpt-4o-mini";
   const attempt = (model, json) => fetch(URL, {
     method: "POST",
@@ -50,7 +53,8 @@ async function askDrapeStyle(summary) {
     res = await attempt(wanted, true);
     if (res.status === 400) res = await attempt(wanted, false);                                   // some models refuse JSON mode
     if (res.status === 404 && wanted !== "gpt-4o-mini") res = await attempt("gpt-4o-mini", true); // unknown model name in the env
-  } catch {
+  } catch (e) {
+    console.warn(`[drape-style] OpenAI could not be reached: ${e?.message || e}`);
     return { style: null, source: "default", reason: "OpenAI could not be reached" };
   }
   if (!res.ok) {
@@ -66,7 +70,8 @@ async function askDrapeStyle(summary) {
     parsed = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1) || "{}");
   } catch { /* fall through to default */ }
   const style = cleanStyle(parsed);
-  if (!Object.keys(style).length) return { style: null, source: "default", reason: "No usable answer" };
+  if (!Object.keys(style).length) { console.warn(`[drape-style] OpenAI answered but nothing usable (model ${wanted})`); return { style: null, source: "default", reason: "No usable answer" }; }
+  console.log(`[drape-style] ok model=${wanted} ${Date.now() - started}ms silhouette=${style.silhouette || "-"}`);
   if (cache.size > 300) cache.delete(cache.keys().next().value);
   cache.set(key, style);
   return { style, source: "openai" };
