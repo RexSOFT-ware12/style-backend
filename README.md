@@ -39,6 +39,8 @@ catalog pricing when applicable.
 
 The authenticated workspace copilot (`POST /api/assistant/workspace`) uses OpenAI. Set `OPENAI_API_KEY` on the Node backend; `OPENAI_ASSISTANT_MODEL` is optional and defaults to `gpt-4o-mini`. Other Gemini-powered tools remain unchanged.
 
+The desktop API-key assistant (`POST /api/desktop/assistant`) also uses OpenAI with the same server-side `OPENAI_API_KEY` and `OPENAI_ASSISTANT_MODEL` settings. The model defaults to `gpt-4o-mini`.
+
 Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`
 on the backend deployment. Product/workspace images and private product ZIPs
 are stored in Cloudinary; ZIP uploads are limited to 200 MB and downloads use

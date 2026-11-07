@@ -2,7 +2,7 @@
 // with a developer API key — see middleware/requireApiKey.js.
 //
 //   GET  /api/desktop/whoami      sign-in check: account, plan, quota
-//   POST /api/desktop/assistant   AI assistant (runs on the server's Anthropic key,
+//   POST /api/desktop/assistant   AI assistant (runs on the server's OpenAI key,
 //                                 so the desktop app never holds a provider key)
 //   GET  /api/desktop/clo-policy  the CLO licence statement the app shows/records
 //
@@ -13,7 +13,7 @@ const { requireApiKey } = require("../middleware/requireApiKey");
 
 const router = express.Router();
 
-const MODEL = process.env.DESKTOP_ASSISTANT_MODEL || "claude-sonnet-5-5";
+const MODEL = process.env.OPENAI_ASSISTANT_MODEL || "gpt-4o-mini";
 const MAX_MESSAGES = 20, MAX_CONTENT = 8000, MAX_SYSTEM = 20000;
 const WINDOW_MS = 60_000, MAX_PER_WINDOW = Number(process.env.DESKTOP_ASSISTANT_PER_MIN || 10);
 
@@ -49,7 +49,7 @@ router.get("/whoami", requireApiKey, (req, res) => {
     key: req.apiKey,
     plan: { tier: e.tier, status: e.status, quota: e.quota, used: e.used, remaining: e.remaining,
             allowance: e.allowance, currentPeriodEnd: e.currentPeriodEnd },
-    assistant: { available: !!process.env.ANTHROPIC_API_KEY, model: MODEL },
+    assistant: { available: !!process.env.OPENAI_API_KEY, provider: "openai", model: MODEL },
     cloPolicy: CLO_POLICY,
   });
 });
@@ -70,16 +70,17 @@ router.post("/assistant", requireApiKey, perKeyLimit, async (req, res, next) => 
   try {
     const bad = validate(req.body);
     if (bad) return res.status(400).json({ error: bad, code: "BAD_REQUEST" });
-    if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: "The assistant is not configured on this server.", code: "ASSISTANT_UNAVAILABLE" });
+    if (!process.env.OPENAI_API_KEY) return res.status(503).json({ error: "The assistant is not configured on this server.", code: "ASSISTANT_UNAVAILABLE" });
 
     const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 60_000);
     let r;
     try {
-      r = await fetch("https://api.anthropic.com/v1/messages", {
+      r = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST", signal: ctl.signal,
-        headers: { "content-type": "application/json", "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model: MODEL, max_tokens: 4096, ...(req.body.system ? { system: req.body.system } : {}),
-                               messages: req.body.messages.map(({ role, content }) => ({ role, content })) }),
+        headers: { "content-type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+        body: JSON.stringify({ model: MODEL, max_tokens: 4096,
+                               messages: [...(req.body.system ? [{ role: "system", content: req.body.system }] : []),
+                                          ...req.body.messages.map(({ role, content }) => ({ role, content }))] }),
       });
     } finally { clearTimeout(timer); }
     const data = await r.json().catch(() => ({}));
@@ -87,8 +88,11 @@ router.post("/assistant", requireApiKey, perKeyLimit, async (req, res, next) => 
       console.error("desktop assistant upstream error", r.status, data?.error?.type);
       return res.status(502).json({ error: "The assistant is temporarily unavailable.", code: "ASSISTANT_UPSTREAM" });
     }
-    const reply = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
-    res.json({ reply, model: data.model || MODEL });
+    const reply = data?.choices?.[0]?.message?.content;
+    if (typeof reply !== "string" || !reply.trim()) {
+      return res.status(502).json({ error: "The assistant returned an empty response.", code: "ASSISTANT_EMPTY_RESPONSE" });
+    }
+    res.json({ reply: reply.trim(), model: data.model || MODEL });
   } catch (err) {
     if (err.name === "AbortError") return res.status(504).json({ error: "The assistant timed out.", code: "ASSISTANT_TIMEOUT" });
     next(err);
