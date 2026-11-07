@@ -1,0 +1,27 @@
+--- a/src/server.js	2026-11-06 02:46:06.000000000 +0000
++++ b/src/server.js	2026-11-07 14:04:18.650313529 +0000
+@@ -27,6 +27,7 @@
+ const patternLibraryRouter = require("./routes/patternLibrary");
+ const bodyMeasurementsRouter = require("./routes/bodyMeasurements");
+ const contactRouter = require("./routes/contact");
++const desktopRouter = require("./routes/desktop");
+ const { verifyWebhookSignature } = require("./lib/paystack");
+ const { handleFabricPayEvent } = require("./routes/fabricPayEvents");
+ 
+@@ -136,6 +137,8 @@
+       "GET    /api/inspiration-library/facets (auth required) — filter values (categories, regions, genders)",
+       "GET    /api/admin/*                    (admin only) users, companies, block, manual API plans, credits, provider keys",
+       "GET    /api/internal/provider-keys     (x-internal-secret) — provider keys for garment-service",
++      "GET    /api/desktop/whoami             (x-api-key) — desktop app sign-in check",
++      "POST   /api/desktop/assistant          (x-api-key) — desktop AI assistant",
+       "POST   /api/svg-customize/process      (auth + premium required) — customizable PNG->SVG trace",
+     ],
+   });
+@@ -156,6 +159,7 @@
+ app.use("/api/store-export", storeExportRouter);
+ app.use("/l", lookbookRoutes.pub);
+ app.use("/api/workspace", workspaceRouter);
++app.use("/api/desktop", desktopRouter); // FabricNow v2 desktop app (API-key auth)
+ app.use("/api/pattern-requests", patternRequestsRouter);
+ app.use("/api/workspace-suite", workspaceSuiteRouter);
+ app.use("/api/companies", companiesRouter);
