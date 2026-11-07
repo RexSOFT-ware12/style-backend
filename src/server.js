@@ -11,6 +11,7 @@ const authRouter = require("./routes/auth");
 const statsRouter = require("./routes/stats");
 const ordersRouter = require("./routes/orders");
 const assistantRouter = require("./routes/assistant");
+const desktopRouter = require("./routes/desktop");
 const taxonomiesRouter = require("./routes/taxonomies");
 const poseToolRouter = require("./routes/poseTool");
 const billingRouter = require("./routes/billing");
@@ -111,6 +112,9 @@ app.get("/", (req, res) => {
       "POST   /api/auth/signin",
       "GET    /api/auth/me         (auth required)",
       "GET    /api/stats",
+      "GET    /api/desktop/whoami            (x-api-key) - desktop account, plan, and quota",
+      "POST   /api/desktop/assistant         (x-api-key) - desktop AI assistant",
+      "GET    /api/desktop/clo-policy        - CLO licence statement",
       "POST   /api/contact                    — sends a message to FabricNow support",
       "POST   /api/orders/checkout           (auth required) — creates a Paystack checkout transaction",
       "GET    /api/orders/me                 (auth required) — order/purchase history",
@@ -148,6 +152,7 @@ app.use("/api/stats", statsRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/orders", ordersRouter);
 app.use("/api/assistant", assistantRouter);
+app.use("/api/desktop", desktopRouter);
 app.use("/api/pose-tool", poseToolRouter);
 app.use("/api/billing", billingRouter);
 app.use("/api/svg-customize", svgCustomizeRouter);
