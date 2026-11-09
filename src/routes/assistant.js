@@ -5,7 +5,7 @@ const WorkspaceProject = require("../models/WorkspaceProject");
 const WorkspaceCollection = require("../models/WorkspaceCollection");
 const WorkspaceTeam = require("../models/WorkspaceTeam");
 const CompanyMembership = require("../models/CompanyMembership");
-const { askFibo, askSiteAssistant, askOnboardingPicks } = require("../lib/gemini");
+const { askFibo, askSiteAssistant, askOnboardingPicks } = require("../lib/fibo");
 const { askWorkspaceAssistant } = require("../lib/openaiAssistant");
 const { createRateLimiter } = require("../middleware/rateLimit");
 const { requireAuth } = require("../middleware/auth");
@@ -13,7 +13,7 @@ const { requireCompany } = require("../middleware/company");
 
 const router = express.Router();
 
-// Fibo calls a paid Gemini API and has no auth in front of it — throttle
+// Fibo calls a paid OpenAI API and has no auth in front of it — throttle
 // per-IP so a single client/script can't run up the bill. 12 requests/min
 // is generous for a real chat session but blocks naive hammering.
 const fiboRateLimit = createRateLimiter({
@@ -31,7 +31,7 @@ const siteChatRateLimit = createRateLimiter({
 });
 
 // This one runs once per user right after signup, but it's still a paid
-// Gemini call sitting behind auth rather than a form submit — a compromised
+// OpenAI call sitting behind auth rather than a form submit — a compromised
 // or scripted account could otherwise hammer it. 6/min per IP is more than
 // enough for a real onboarding session (which only ever calls it once) while
 // keeping the ceiling low.
@@ -122,8 +122,8 @@ router.post("/ask", fiboRateLimit, async (req, res, next) => {
 
     res.json({ reply, suggestions });
   } catch (err) {
-    if (err.message === "GEMINI_API_KEY is not configured on the server") {
-      return res.status(503).json({ error: "Fibo isn't configured yet — missing GEMINI_API_KEY." });
+    if (err.message === "OPENAI_API_KEY is not configured on the server") {
+      return res.status(503).json({ error: "Fibo isn't configured yet — missing OPENAI_API_KEY." });
     }
     next(err);
   }
@@ -173,8 +173,8 @@ router.post("/chat", siteChatRateLimit, async (req, res, next) => {
 
     res.json({ reply });
   } catch (err) {
-    if (err.message === "GEMINI_API_KEY is not configured on the server") {
-      return res.status(503).json({ error: "Live chat isn't configured yet — missing GEMINI_API_KEY." });
+    if (err.message === "OPENAI_API_KEY is not configured on the server") {
+      return res.status(503).json({ error: "Live chat isn't configured yet — missing OPENAI_API_KEY." });
     }
     next(err);
   }
@@ -236,7 +236,7 @@ ${JSON.stringify(workspaceContext,null,2)}`;
 // Body: { styles: string[], experience: string }
 // Powers the first-signup "Welcome" page: turns the couple of taps a new
 // user just made into a short personalized note plus a shortlist of real
-// products, via Gemini. Runs once per account (the frontend only calls this
+// products, via OpenAI. Runs once per account (the frontend only calls this
 // from /welcome), so it stays intentionally small in scope.
 // ---------------------------------------------------------------------------
 router.post("/onboarding", requireAuth, onboardingRateLimit, async (req, res, next) => {
@@ -300,14 +300,14 @@ router.post("/onboarding", requireAuth, onboardingRateLimit, async (req, res, ne
       .filter(Boolean)
       .slice(0, 6);
 
-    // Gemini returned nothing usable — still give the page something to
+    // OpenAI returned nothing usable — still give the page something to
     // show rather than an empty state.
     const finalProducts = products.length ? products : cardPool.slice(0, 6);
 
     res.json({ intro, products: finalProducts });
   } catch (err) {
-    if (err.message === "GEMINI_API_KEY is not configured on the server") {
-      return res.status(503).json({ error: "Onboarding picks aren't configured yet — missing GEMINI_API_KEY." });
+    if (err.message === "OPENAI_API_KEY is not configured on the server") {
+      return res.status(503).json({ error: "Onboarding picks aren't configured yet — missing OPENAI_API_KEY." });
     }
     next(err);
   }

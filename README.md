@@ -70,4 +70,4 @@ The workspace pattern worker now supports OpenAI/Claude vision selection, Claude
 
 ### Tailor Tools AI provider
 
-Tailor Tools (`/api/tailor-tools/ai`, `/stitch-plan`, and `/cutting-layout`) uses OpenAI, not Gemini. Set `OPENAI_API_KEY` in the backend environment. Optionally set `OPENAI_TAILOR_TOOLS_MODEL`; by default it reuses `OPENAI_ASSISTANT_MODEL` and falls back to `gpt-4o-mini`. No Gemini prepayment balance is needed for these Tailor Tools endpoints.
+Tailor Tools (`/api/tailor-tools/ai`, `/stitch-plan`, and `/cutting-layout`) uses OpenAI. Set `OPENAI_API_KEY` in the backend environment. Optionally set `OPENAI_TAILOR_TOOLS_MODEL`; by default it reuses `OPENAI_ASSISTANT_MODEL` and falls back to `gpt-4o-mini`. No Gemini prepayment balance is needed for these Tailor Tools endpoints.

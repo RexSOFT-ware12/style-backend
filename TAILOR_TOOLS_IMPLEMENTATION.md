@@ -1,6 +1,6 @@
 # Tailor Tools backend
 
-Added `src/models/TailorToolBoard.js`, `src/routes/tailorTools.js`, and `askTailorTools()` in `src/lib/gemini.js`.
+Added `src/models/TailorToolBoard.js`, `src/routes/tailorTools.js`, and `askTailorTools()` in `src/lib/openaiTailorTools.js`.
 
 Endpoints:
 - GET/POST `/api/tailor-tools/boards`

@@ -11,10 +11,13 @@ const PROVIDER_GROUPS = [
   {
     id: "openai",
     label: "OpenAI",
-    description: "Used by the workspace assistant and garment part segmentation.",
+    description: "Used by Fibo, Pose Tool, pattern design, the workspace assistant and garment part segmentation.",
     fields: [
       { name: "OPENAI_API_KEY", label: "API key", secret: true, sharedWithGarmentService: true },
       { name: "OPENAI_ASSISTANT_MODEL", label: "Workspace assistant model", secret: false, placeholder: "gpt-4o-mini" },
+      { name: "OPENAI_FIBO_MODEL", label: "Fibo chat model", secret: false, placeholder: "gpt-4o-mini" },
+      { name: "OPENAI_POSE_MODEL", label: "Pose Tool vision model", secret: false, placeholder: "gpt-4o-mini" },
+      { name: "OPENAI_IMAGE_MODEL", label: "Pose Tool image model", secret: false, placeholder: "gpt-image-1" },
     ],
   },
   {
@@ -25,16 +28,6 @@ const PROVIDER_GROUPS = [
       { name: "ANTHROPIC_API_KEY", label: "API key", secret: true },
       { name: "ANTHROPIC_VISION_MODEL", label: "Vision model", secret: false, placeholder: "claude-sonnet-4-5" },
       { name: "AI_VISION_PROVIDER", label: "Vision provider", secret: false, placeholder: "auto" },
-    ],
-  },
-  {
-    id: "gemini",
-    label: "Google Gemini",
-    description: "Fibo assistant, Pose Tool and pattern design.",
-    fields: [
-      { name: "GEMINI_API_KEY", label: "API key", secret: true },
-      { name: "GEMINI_MODEL", label: "Text / vision model", secret: false, needsRestart: true, placeholder: "gemini-3.6-flash" },
-      { name: "GEMINI_IMAGE_MODEL", label: "Image model", secret: false, needsRestart: true, placeholder: "gemini-2.5-flash-image" },
     ],
   },
   {

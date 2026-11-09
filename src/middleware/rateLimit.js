@@ -5,7 +5,7 @@
  * today) — swap for a shared store (e.g. Redis) if this ever runs behind
  * multiple instances, since counts here are per-process.
  *
- * Used to keep Fibo's /api/assistant/ask endpoint (a paid Gemini call, and
+ * Used to keep Fibo's /api/assistant/ask endpoint (a paid OpenAI call, and
  * currently unauthenticated) from being hammered by a single client/script.
  */
 function createRateLimiter({

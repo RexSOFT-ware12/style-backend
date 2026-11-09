@@ -4,7 +4,7 @@
  *    The app draws the flat sketch from that spec, so the model only ever picks from a fixed vocabulary.
  *  - askFabricFromImage: reads a photo of a fabric and fills in a fabric record.
  *  - makeFabricSwatch: asks the image model for a clean, flat, square swatch of the fabric in a photo.
- * Uses the shared OpenAI API key; no Gemini dependency.
+ * Uses the shared OpenAI API key.
  */
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_IMAGES_EDIT_URL = 'https://api.openai.com/v1/images/edits';

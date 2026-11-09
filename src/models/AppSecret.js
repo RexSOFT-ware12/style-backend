@@ -1,7 +1,7 @@
 const { Schema, model } = require("mongoose");
 
 // One document per provider key/setting an admin has set from the dashboard
-// (OpenAI, Anthropic/Claude, Gemini, Hugging Face, ...). Secret values are
+// (OpenAI, Anthropic/Claude, Hugging Face, ...). Secret values are
 // stored AES-256-GCM encrypted (lib/secretsStore.js) — never plaintext, and
 // never returned by any API (only `last4` is shown in the dashboard).
 //

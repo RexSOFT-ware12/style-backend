@@ -11,7 +11,7 @@
 //   POST   /api/admin/users/:id/api-credits      add or remove rollover credits
 //   POST   /api/admin/users/:id/api-subscription/cancel
 //   GET    /api/admin/companies
-//   GET    /api/admin/provider-keys              OpenAI / Claude / Gemini / ... (masked)
+//   GET    /api/admin/provider-keys              OpenAI / Claude / ... (masked)
 //   PUT    /api/admin/provider-keys/:name        { value }
 //   DELETE /api/admin/provider-keys/:name        back to the server default
 //   POST   /api/admin/provider-keys/:name/test   { value? }
@@ -467,7 +467,7 @@ router.get("/companies", async (req, res, next) => {
   }
 });
 
-// ---- Provider keys (OpenAI, Claude, Gemini, ...) ---------------------------------
+// ---- Provider keys (OpenAI, Claude, ...) ---------------------------------
 
 router.get("/provider-keys", async (req, res, next) => {
   try {

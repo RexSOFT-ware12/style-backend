@@ -6,10 +6,6 @@ const TESTS = {
     url: "https://api.anthropic.com/v1/models?limit=1",
     headers: { "x-api-key": k, "anthropic-version": "2023-06-01" },
   }),
-  GEMINI_API_KEY: (k) => ({
-    url: "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1",
-    headers: { "x-goog-api-key": k },
-  }),
   HF_TOKEN: (k) => ({ url: "https://huggingface.co/api/whoami-v2", headers: { Authorization: `Bearer ${k}` } }),
   UNSPLASH_ACCESS_KEY: (k) => ({
     url: "https://api.unsplash.com/photos?per_page=1",

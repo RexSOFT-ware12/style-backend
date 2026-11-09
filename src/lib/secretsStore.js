@@ -1,11 +1,11 @@
-// Lets an admin change provider keys (OpenAI, Claude, Gemini, ...) from the
+// Lets an admin change provider keys (OpenAI, Claude, ...) from the
 // dashboard without editing .env or redeploying.
 //
 // How it works: values saved from the dashboard live encrypted in MongoDB
 // (models/AppSecret.js). On startup — and every minute after, so every App
 // Engine instance converges — they're decrypted and written over the matching
 // process.env.X. All the existing code that already reads process.env.X at
-// call time (gemini.js, garmentTool.js, inspirationLibrary.js, ...) keeps
+// call time (fibo.js, garmentTool.js, inspirationLibrary.js, ...) keeps
 // working untouched and simply sees the new value. Deleting a dashboard value
 // restores whatever the original environment variable was.
 const crypto = require("crypto");
