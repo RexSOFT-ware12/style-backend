@@ -17,7 +17,7 @@ const PROVIDER_GROUPS = [
       { name: "OPENAI_ASSISTANT_MODEL", label: "Workspace assistant model", secret: false, placeholder: "gpt-4o-mini" },
       { name: "OPENAI_FIBO_MODEL", label: "Fibo chat model", secret: false, placeholder: "gpt-4o-mini" },
       { name: "OPENAI_POSE_MODEL", label: "Pose Tool vision model", secret: false, placeholder: "gpt-4o-mini" },
-      { name: "OPENAI_IMAGE_MODEL", label: "Pose Tool image model", secret: false, placeholder: "gpt-image-1" },
+      { name: "OPENAI_IMAGE_MODEL", label: "Pose Tool image model", secret: false, placeholder: "gpt-image-2.5-sunburst" },
     ],
   },
   {
