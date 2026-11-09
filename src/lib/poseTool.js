@@ -19,9 +19,9 @@ const fs = require("fs");
 const path = require("path");
 
 // Models are overridable via env. Vision reuses a multimodal chat model; image
-// generation needs an image model (gpt-image-1 may require OpenAI org verification).
+// generation needs an image model (gpt-image-2.5-sunburst may require OpenAI org verification).
 const POSE_MODEL = process.env.OPENAI_POSE_MODEL || "gpt-4o-mini";
-const IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1";
+const IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-2.5-sunburst";
 const { post, MISSING } = require("./openaiClient");
 
 const POSE_SYSTEM_INSTRUCTION = `You are a fashion/fit specialist helping a CLO3D garment designer quickly pose a 3D avatar to match a reference photo.

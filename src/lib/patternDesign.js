@@ -9,7 +9,7 @@
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_IMAGES_EDIT_URL = 'https://api.openai.com/v1/images/edits';
 const OPENAI_MODEL = process.env.OPENAI_FABRIC_MODEL || process.env.OPENAI_ASSISTANT_MODEL || 'gpt-4o-mini';
-const OPENAI_IMAGE_MODEL = process.env.OPENAI_FABRIC_IMAGE_MODEL || 'gpt-image-1';
+const OPENAI_IMAGE_MODEL = process.env.OPENAI_FABRIC_IMAGE_MODEL || 'gpt-image-2.5-sunburst';
 
 /* Must match src/pages/patterns/flats.js in the frontend. */
 const VOCAB = {
