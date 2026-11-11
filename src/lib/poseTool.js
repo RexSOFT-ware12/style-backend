@@ -108,7 +108,7 @@ const ANGLE_PROMPTS = {
   side: "Side/profile view (camera at 90° to the figure), full body, head to toe visible.",
   back: "Back view (camera behind the figure), full body, head to toe visible.",
 };
-
+          
 const IMAGE_STYLE_PREFIX =
   "A plain matte-grey featureless studio mannequin / dress-form figure (no face, no clothing, no hair, no skin tone, no identity), standing in the exact body pose described below, on a seamless white studio background, soft even lighting, orthographic-feeling full-body reference shot. ";
 
