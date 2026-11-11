@@ -1,7 +1,7 @@
 {
   "name": "fabricnow-backend",
   "version": "1.0.0",
-  "description": "FabricNow backend API — powers both the FabricNow storefront (Next.js) and the FabricNow Admin Dashboard from a single shared data source.",
+  "description": "FabricNow backend API \u2014 powers both the FabricNow storefront (Next.js) and the FabricNow Admin Dashboard from a single shared data source.",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
@@ -11,7 +11,8 @@
     "migrate-company-workspaces": "node src/scripts/migrate-company-workspaces.js",
     "migrate-quasiai-to-fabricnow": "node src/scripts/migrate-quasiai-to-fabricnow.js",
     "seed-inspirations": "node src/scripts/seed-inspirations.js",
-    "fetch-bg-model": "node scripts/fetch-bg-model.js"
+    "fetch-bg-model": "node scripts/fetch-bg-model.js",
+    "seed-stickers": "node src/scripts/seed-stickers.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"><defs><filter id="die" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+  <feMorphology in="SourceAlpha" operator="dilate" radius="8" result="edge"/><feFlood flood-color="#d6d3d1"/><feComposite in2="edge" operator="in" result="edgeFill"/>
+  <feMorphology in="SourceAlpha" operator="dilate" radius="6" result="cut"/><feFlood flood-color="#ffffff"/><feComposite in2="cut" operator="in" result="cutFill"/>
+  <feMerge><feMergeNode in="edgeFill"/><feMergeNode in="cutFill"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g transform="translate(12 12) scale(.88)"><g filter="url(#die)">
+    <defs><clipPath id="ac"><rect x="0" y="100" width="200" height="100"/></clipPath></defs>
+    <g transform="rotate(-20 100 100)">
+      <ellipse cx="100" cy="100" rx="82" ry="24" fill="none" stroke="#1c1917" stroke-width="16"/>
+      <ellipse cx="100" cy="100" rx="82" ry="24" fill="none" stroke="#fde68a" stroke-width="9"/>
+      <circle cx="100" cy="100" r="46" fill="#f97316" stroke="#1c1917" stroke-width="5"/>
+      <path d="M68 86c14-8 50-8 64 0M60 106c20-8 60-8 80 0" fill="none" stroke="#fdba74" stroke-width="6" stroke-linecap="round"/>
+      <g clip-path="url(#ac)">
+        <ellipse cx="100" cy="100" rx="82" ry="24" fill="none" stroke="#1c1917" stroke-width="16"/>
+        <ellipse cx="100" cy="100" rx="82" ry="24" fill="none" stroke="#fde68a" stroke-width="9"/>
+      </g>
+    </g>
+    <polygon points="38.0,34.0 41.5,42.5 50.0,46.0 41.5,49.5 38.0,58.0 34.5,49.5 26.0,46.0 34.5,42.5" fill="#fff" stroke="#1c1917" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="168.0,151.0 170.8,157.2 177.0,160.0 170.8,162.8 168.0,169.0 165.2,162.8 159.0,160.0 165.2,157.2" fill="#fff" stroke="#1c1917" stroke-width="3" stroke-linejoin="round"/></g></g></svg>

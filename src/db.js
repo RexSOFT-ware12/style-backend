@@ -9,6 +9,9 @@
  * connectDB() is called once from server.js before the app starts listening.
  */
 const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+dotenv.config();
+
 
 async function connectDB() {
   const uri = process.env.MONGODB_URI;

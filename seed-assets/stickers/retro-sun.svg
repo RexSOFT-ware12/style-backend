@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"><defs><filter id="die" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+  <feMorphology in="SourceAlpha" operator="dilate" radius="8" result="edge"/><feFlood flood-color="#d6d3d1"/><feComposite in2="edge" operator="in" result="edgeFill"/>
+  <feMorphology in="SourceAlpha" operator="dilate" radius="6" result="cut"/><feFlood flood-color="#ffffff"/><feComposite in2="cut" operator="in" result="cutFill"/>
+  <feMerge><feMergeNode in="edgeFill"/><feMergeNode in="cutFill"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g transform="translate(12 12) scale(.88)"><g filter="url(#die)">
+    <defs>
+      <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde047"/><stop offset=".55" stop-color="#fb923c"/><stop offset="1" stop-color="#e11d48"/></linearGradient>
+      <mask id="am"><rect width="200" height="200" fill="#fff"/>
+        <rect y="112" width="200" height="3" fill="#000"/><rect y="126" width="200" height="5" fill="#000"/>
+        <rect y="142" width="200" height="7" fill="#000"/><rect y="160" width="200" height="9" fill="#000"/></mask>
+    </defs>
+    <circle cx="100" cy="100" r="78" fill="#1c1917"/>
+    <circle cx="100" cy="100" r="66" fill="url(#ag)" mask="url(#am)"/></g></g></svg>

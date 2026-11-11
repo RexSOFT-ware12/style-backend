@@ -1,8 +1,8 @@
-# FabricNow — Paystack Inline billing implementation
+# FabricNow — Paystack hosted checkout billing implementation
 
 ## What changed
 
-- FabricNow subscription and digital-product checkout now opens Paystack Inline (Popup V2) inside the app instead of sending customers to a generic hosted checkout page.
+- FabricNow subscription and digital-product checkout redirects customers to Paystack-hosted checkout using the `authorization_url` returned by Paystack.
 - Both Styles and Workspace keep displaying catalogue prices in USD. The browser is not sent a GHS equivalent, GHS transaction amount, or GHS currency field.
 - The Ghana backend uses GHS for Paystack transactions and subscription plans. Subscription GHS amounts are fixed in the backend/Paystack plan; USD is the storefront display price.
 - The backend calculates one-time product-order conversions using `PAYSTACK_USD_GHS_RATE`. This rate is server-only.

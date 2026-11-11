@@ -1,0 +1,230 @@
+[
+  {
+    "id": "sticker-good-vibes",
+    "name": "Good Vibes Sunburst",
+    "price": 3.99,
+    "slug": "good-vibes",
+    "style": "Badge",
+    "description": "Bold sunburst badge. Sits well on a chest or a hoodie pocket.",
+    "garments": [
+      "shirt",
+      "hoodie"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": "Best seller"
+  },
+  {
+    "id": "sticker-voltage",
+    "name": "Voltage Bolt",
+    "price": 2.99,
+    "slug": "voltage",
+    "style": "Graphic",
+    "description": "High-contrast lightning bolt on royal blue.",
+    "garments": [
+      "shirt",
+      "shorts",
+      "hoodie"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-retro-sun",
+    "name": "Retro Sunset",
+    "price": 3.49,
+    "slug": "retro-sun",
+    "style": "Retro",
+    "description": "Striped sun in warm gradient. Clean on dark fabric.",
+    "garments": [
+      "shirt",
+      "shorts"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-flame-heart",
+    "name": "Flame Heart",
+    "price": 3.49,
+    "slug": "flame-heart",
+    "style": "Graphic",
+    "description": "A heart with a flame cut-out. Works at left-chest size.",
+    "garments": [
+      "shirt",
+      "hoodie"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-varsity-star",
+    "name": "Varsity Star",
+    "price": 3.99,
+    "slug": "varsity-star",
+    "style": "Badge",
+    "description": "Collegiate star roundel with stitched-look ring.",
+    "garments": [
+      "shirt",
+      "shorts",
+      "hoodie"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-night-shift",
+    "name": "Night Shift Moon",
+    "price": 2.99,
+    "slug": "night-shift",
+    "style": "Graphic",
+    "description": "Crescent moon with three sparkles.",
+    "garments": [
+      "shirt",
+      "hoodie"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-cactus",
+    "name": "Desert Pot",
+    "price": 3.49,
+    "slug": "cactus",
+    "style": "Illustration",
+    "description": "Potted cactus on a peach disc.",
+    "garments": [
+      "shirt",
+      "shorts"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-wave",
+    "name": "Wave Crest",
+    "price": 3.49,
+    "slug": "wave",
+    "style": "Illustration",
+    "description": "Layered ocean wave in a circle. A natural fit for swim shorts.",
+    "garments": [
+      "shorts",
+      "shirt"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-checker",
+    "name": "Full Lap Checker",
+    "price": 2.99,
+    "slug": "checker",
+    "style": "Streetwear",
+    "description": "Checkerboard roundel with a red banner.",
+    "garments": [
+      "shorts",
+      "shirt",
+      "hoodie"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-stay-wild",
+    "name": "Stay Wild Tag",
+    "price": 2.99,
+    "slug": "stay-wild",
+    "style": "Typography",
+    "description": "Tilted two-line slogan tag in violet and yellow.",
+    "garments": [
+      "shirt",
+      "hoodie"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-cherries",
+    "name": "Cherry Pair",
+    "price": 2.99,
+    "slug": "cherries",
+    "style": "Illustration",
+    "description": "Glossy cherries with a leaf. Small and cheerful.",
+    "garments": [
+      "shirt",
+      "shorts"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-orbit",
+    "name": "Ringed Planet",
+    "price": 3.99,
+    "slug": "orbit",
+    "style": "Graphic",
+    "description": "Orange planet, pale ring, loose stars.",
+    "garments": [
+      "shirt",
+      "hoodie"
+    ],
+    "count": 1,
+    "isPack": false,
+    "badge": ""
+  },
+  {
+    "id": "sticker-pack-starter",
+    "name": "Starter Pack",
+    "price": 9.99,
+    "slug": "pack-starter",
+    "style": "Pack",
+    "description": "Six everyday shirt designs, including Good Vibes, Voltage and Flame Heart.",
+    "garments": [
+      "shirt",
+      "hoodie"
+    ],
+    "count": 6,
+    "isPack": true,
+    "badge": "Save 30%"
+  },
+  {
+    "id": "sticker-pack-shorts",
+    "name": "Shorts Side-Print Pack",
+    "price": 7.99,
+    "slug": "pack-shorts",
+    "style": "Pack",
+    "description": "Four round designs sized for a leg print: Retro Sunset, Wave Crest, Full Lap and Desert Pot.",
+    "garments": [
+      "shorts"
+    ],
+    "count": 4,
+    "isPack": true,
+    "badge": ""
+  },
+  {
+    "id": "sticker-pack-library",
+    "name": "Full Library",
+    "price": 19.99,
+    "slug": "pack-library",
+    "style": "Pack",
+    "description": "All twelve single stickers in one purchase, plus every future drop.",
+    "garments": [
+      "shirt",
+      "shorts",
+      "hoodie"
+    ],
+    "count": 12,
+    "isPack": true,
+    "badge": "Best value"
+  }
+]

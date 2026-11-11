@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400"><defs><filter id="die" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+  <feMorphology in="SourceAlpha" operator="dilate" radius="8" result="edge"/><feFlood flood-color="#d6d3d1"/><feComposite in2="edge" operator="in" result="edgeFill"/>
+  <feMorphology in="SourceAlpha" operator="dilate" radius="6" result="cut"/><feFlood flood-color="#ffffff"/><feComposite in2="cut" operator="in" result="cutFill"/>
+  <feMerge><feMergeNode in="edgeFill"/><feMergeNode in="cutFill"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g transform="translate(20 20) scale(.8)"><g filter="url(#die)">
+    <defs>
+      <linearGradient id="p0g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde047"/><stop offset=".55" stop-color="#fb923c"/><stop offset="1" stop-color="#e11d48"/></linearGradient>
+      <mask id="p0m"><rect width="200" height="200" fill="#fff"/>
+        <rect y="112" width="200" height="3" fill="#000"/><rect y="126" width="200" height="5" fill="#000"/>
+        <rect y="142" width="200" height="7" fill="#000"/><rect y="160" width="200" height="9" fill="#000"/></mask>
+    </defs>
+    <circle cx="100" cy="100" r="78" fill="#1c1917"/>
+    <circle cx="100" cy="100" r="66" fill="url(#p0g)" mask="url(#p0m)"/></g></g><g transform="translate(220 20) scale(.8)"><g filter="url(#die)">
+    <defs><clipPath id="p1c"><circle cx="100" cy="100" r="76"/></clipPath></defs>
+    <circle cx="100" cy="100" r="78" fill="#0369a1"/>
+    <g clip-path="url(#p1c)">
+      <circle cx="140" cy="62" r="18" fill="#fde68a"/>
+      <path d="M10 112c24-30 48-30 72 0s48 30 72 0 32-14 50-4v100H10z" fill="#7dd3fc"/>
+      <path d="M10 140c24-24 48-24 72 0s48 24 72 0 32-12 50-2v70H10z" fill="#e0f2fe"/>
+    </g>
+    <circle cx="100" cy="100" r="76" fill="none" stroke="#1c1917" stroke-width="5"/></g></g><g transform="translate(20 220) scale(.8)"><g filter="url(#die)">
+    <defs><clipPath id="p2c"><circle cx="100" cy="100" r="78"/></clipPath></defs>
+    <circle cx="100" cy="100" r="78" fill="#fafaf9"/>
+    <g clip-path="url(#p2c)"><rect x="20" y="20" width="20" height="20" fill="#1c1917"/><rect x="60" y="20" width="20" height="20" fill="#1c1917"/><rect x="100" y="20" width="20" height="20" fill="#1c1917"/><rect x="140" y="20" width="20" height="20" fill="#1c1917"/><rect x="40" y="40" width="20" height="20" fill="#1c1917"/><rect x="80" y="40" width="20" height="20" fill="#1c1917"/><rect x="120" y="40" width="20" height="20" fill="#1c1917"/><rect x="160" y="40" width="20" height="20" fill="#1c1917"/><rect x="20" y="60" width="20" height="20" fill="#1c1917"/><rect x="60" y="60" width="20" height="20" fill="#1c1917"/><rect x="100" y="60" width="20" height="20" fill="#1c1917"/><rect x="140" y="60" width="20" height="20" fill="#1c1917"/><rect x="40" y="80" width="20" height="20" fill="#1c1917"/><rect x="80" y="80" width="20" height="20" fill="#1c1917"/><rect x="120" y="80" width="20" height="20" fill="#1c1917"/><rect x="160" y="80" width="20" height="20" fill="#1c1917"/><rect x="20" y="100" width="20" height="20" fill="#1c1917"/><rect x="60" y="100" width="20" height="20" fill="#1c1917"/><rect x="100" y="100" width="20" height="20" fill="#1c1917"/><rect x="140" y="100" width="20" height="20" fill="#1c1917"/><rect x="40" y="120" width="20" height="20" fill="#1c1917"/><rect x="80" y="120" width="20" height="20" fill="#1c1917"/><rect x="120" y="120" width="20" height="20" fill="#1c1917"/><rect x="160" y="120" width="20" height="20" fill="#1c1917"/><rect x="20" y="140" width="20" height="20" fill="#1c1917"/><rect x="60" y="140" width="20" height="20" fill="#1c1917"/><rect x="100" y="140" width="20" height="20" fill="#1c1917"/><rect x="140" y="140" width="20" height="20" fill="#1c1917"/><rect x="40" y="160" width="20" height="20" fill="#1c1917"/><rect x="80" y="160" width="20" height="20" fill="#1c1917"/><rect x="120" y="160" width="20" height="20" fill="#1c1917"/><rect x="160" y="160" width="20" height="20" fill="#1c1917"/></g>
+    <circle cx="100" cy="100" r="78" fill="none" stroke="#1c1917" stroke-width="5"/>
+    <rect x="30" y="84" width="140" height="34" rx="6" fill="#dc2626" stroke="#1c1917" stroke-width="4"/>
+    <text x="100" y="109" text-anchor="middle" font-size="20" letter-spacing="3" font-family="'Arial Black', Impact, 'Helvetica Neue', Arial, sans-serif" font-weight="900" fill="#fff">FULL LAP</text></g></g><g transform="translate(220 220) scale(.8)"><g filter="url(#die)">
+    <circle cx="100" cy="100" r="80" fill="#fdba74" stroke="#1c1917" stroke-width="4"/>
+    <g stroke="#1c1917" stroke-width="4" stroke-linejoin="round">
+      <rect x="86" y="44" width="28" height="112" rx="14" fill="#16a34a"/>
+      <rect x="54" y="76" width="18" height="44" rx="9" fill="#22c55e"/><rect x="60" y="106" width="38" height="14" rx="7" fill="#22c55e"/>
+      <rect x="128" y="62" width="18" height="44" rx="9" fill="#22c55e"/><rect x="102" y="92" width="38" height="14" rx="7" fill="#22c55e"/>
+      <path d="M72 150h56l-8 30H80z" fill="#c2410c"/>
+    </g></g></g></svg>

@@ -54,7 +54,14 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
     const orderItems = [];
 
     for (const { productId, quantity } of items) {
-      const product = await Product.findById(productId).catch(() => null);
+      // Storefront sticker carts use their stable SKU slug (for example
+      // "sticker-good-vibes"), while ordinary catalog products use Mongo IDs.
+      // Resolve either form server-side so prices and delivery files remain
+      // authoritative and the client cannot submit a custom price.
+      const productKey = String(productId || "");
+      const product = /^[a-f\d]{24}$/i.test(productKey)
+        ? await Product.findById(productKey).catch(() => null)
+        : await Product.findOne({ sku: productKey }).catch(() => null);
       if (!product) {
         return res.status(400).json({ error: `Product ${productId} not found` });
       }
@@ -95,7 +102,7 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
     order.paystackReference = transaction.reference;
     await order.save();
 
-    res.json({ access_code: transaction.access_code, orderId: order.id, reference: transaction.reference });
+    res.json({ authorization_url: transaction.authorization_url, orderId: order.id, reference: transaction.reference });
   } catch (err) {
     if (err.code?.startsWith("PAYSTACK_")) {
       console.error("Paystack order checkout failed:", err.message);

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"><defs><filter id="die" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+  <feMorphology in="SourceAlpha" operator="dilate" radius="8" result="edge"/><feFlood flood-color="#d6d3d1"/><feComposite in2="edge" operator="in" result="edgeFill"/>
+  <feMorphology in="SourceAlpha" operator="dilate" radius="6" result="cut"/><feFlood flood-color="#ffffff"/><feComposite in2="cut" operator="in" result="cutFill"/>
+  <feMerge><feMergeNode in="edgeFill"/><feMergeNode in="cutFill"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g transform="translate(12 12) scale(.88)"><g filter="url(#die)">
+    <g transform="rotate(-6 100 100)">
+      <rect x="26" y="46" width="148" height="108" rx="26" fill="#7c3aed" stroke="#1c1917" stroke-width="5"/>
+      <text x="100" y="97" text-anchor="middle" font-size="40" font-family="'Arial Black', Impact, 'Helvetica Neue', Arial, sans-serif" font-weight="900" fill="#fff">STAY</text>
+      <text x="100" y="138" text-anchor="middle" font-size="40" font-family="'Arial Black', Impact, 'Helvetica Neue', Arial, sans-serif" font-weight="900" fill="#fde047" stroke="#1c1917" stroke-width="1.5">WILD</text>
+    </g></g></g></svg>

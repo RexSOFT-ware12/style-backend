@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"><defs><filter id="die" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+  <feMorphology in="SourceAlpha" operator="dilate" radius="8" result="edge"/><feFlood flood-color="#d6d3d1"/><feComposite in2="edge" operator="in" result="edgeFill"/>
+  <feMorphology in="SourceAlpha" operator="dilate" radius="6" result="cut"/><feFlood flood-color="#ffffff"/><feComposite in2="cut" operator="in" result="cutFill"/>
+  <feMerge><feMergeNode in="edgeFill"/><feMergeNode in="cutFill"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g transform="translate(12 12) scale(.88)"><g filter="url(#die)">
+    <defs><clipPath id="ac"><circle cx="100" cy="100" r="76"/></clipPath></defs>
+    <circle cx="100" cy="100" r="78" fill="#0369a1"/>
+    <g clip-path="url(#ac)">
+      <circle cx="140" cy="62" r="18" fill="#fde68a"/>
+      <path d="M10 112c24-30 48-30 72 0s48 30 72 0 32-14 50-4v100H10z" fill="#7dd3fc"/>
+      <path d="M10 140c24-24 48-24 72 0s48 24 72 0 32-12 50-2v70H10z" fill="#e0f2fe"/>
+    </g>
+    <circle cx="100" cy="100" r="76" fill="none" stroke="#1c1917" stroke-width="5"/></g></g></svg>

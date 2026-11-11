@@ -482,7 +482,7 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
       metadata: { userId: user.id, product: "premium", displayCurrency: "USD", displayAmount: Number(process.env.FABRICNOW_PREMIUM_PRICE_USD || 29.99) },
     });
     res.json({
-      access_code: transaction.access_code,
+      authorization_url: transaction.authorization_url,
       reference: transaction.reference,
     });
   } catch (err) {
@@ -593,7 +593,7 @@ router.post("/api-checkout", requireAuth, async (req, res, next) => {
       callbackUrl: `${WORKSPACE_URL}?billing=success`,
       metadata: { userId: user.id, product: "api", apiTier: tier },
     });
-    res.json({ access_code: transaction.access_code, reference: transaction.reference });
+    res.json({ authorization_url: transaction.authorization_url, reference: transaction.reference });
   } catch (err) {
     handlePaystackError(err, res, next);
   }

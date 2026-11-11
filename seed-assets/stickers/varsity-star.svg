@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"><defs><filter id="die" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+  <feMorphology in="SourceAlpha" operator="dilate" radius="8" result="edge"/><feFlood flood-color="#d6d3d1"/><feComposite in2="edge" operator="in" result="edgeFill"/>
+  <feMorphology in="SourceAlpha" operator="dilate" radius="6" result="cut"/><feFlood flood-color="#ffffff"/><feComposite in2="cut" operator="in" result="cutFill"/>
+  <feMerge><feMergeNode in="edgeFill"/><feMergeNode in="cutFill"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g transform="translate(12 12) scale(.88)"><g filter="url(#die)">
+    <circle cx="100" cy="100" r="80" fill="#14532d" stroke="#1c1917" stroke-width="4"/>
+    <circle cx="100" cy="100" r="68" fill="none" stroke="#fef9c3" stroke-width="2.5" stroke-dasharray="6 5"/>
+    <polygon points="100.0,42.0 111.8,73.8 145.7,75.2 119.0,96.2 128.2,128.8 100.0,110.0 71.8,128.8 81.0,96.2 54.3,75.2 88.2,73.8" fill="#fef08a" stroke="#1c1917" stroke-width="4" stroke-linejoin="round"/>
+    <text x="100" y="154" text-anchor="middle" font-size="16" letter-spacing="4" font-family="'Arial Black', Impact, 'Helvetica Neue', Arial, sans-serif" font-weight="900" fill="#fef9c3">EST. 24</text></g></g></svg>
