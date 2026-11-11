@@ -3,6 +3,7 @@
 ## What changed
 
 - FabricNow subscription and digital-product checkout redirects customers to Paystack-hosted checkout using the `authorization_url` returned by Paystack.
+- Checkout initialization intentionally does not send a `channels` allowlist, so Paystack can show all payment methods enabled and eligible for the merchant account and transaction.
 - Both Styles and Workspace keep displaying catalogue prices in USD. The browser is not sent a GHS equivalent, GHS transaction amount, or GHS currency field.
 - The Ghana backend uses GHS for Paystack transactions and subscription plans. Subscription GHS amounts are fixed in the backend/Paystack plan; USD is the storefront display price.
 - The backend calculates one-time product-order conversions using `PAYSTACK_USD_GHS_RATE`. This rate is server-only.
@@ -36,10 +37,13 @@ PAYSTACK_USD_GHS_RATE=11.68
 ## Paystack dashboard configuration
 
 1. Create/confirm the monthly Premium, API Starter, and API Growth plans in **GHS** with exact amounts matching the environment values.
-2. Enable international card payments for your Ghana business in Paystack Dashboard → Settings/Preferences, subject to Paystack approval.
-3. Configure the webhook URL as `https://YOUR-API-HOST/api/paystack/webhook` for both test and live environments as applicable.
-4. Keep the secret key only on the backend. Do not add it to either frontend `.env` file.
-5. Test with Paystack test keys and test cards before switching to live keys.
+2. In Paystack Dashboard, enable the payment methods available to your Ghana business (such as bank transfer or mobile money) and complete any required approvals. Paystack determines availability by merchant account, transaction currency, customer location, and device/browser; the backend cannot force an unavailable method to appear.
+3. Ask Paystack to confirm Apple Pay eligibility for this Ghana account. Apple Pay appears only for eligible transactions and supported Apple devices/browsers; it is not guaranteed by enabling hosted checkout.
+4. Configure the webhook URL as `https://YOUR-API-HOST/api/paystack/webhook` for both test and live environments as applicable.
+5. Keep the secret key only on the backend. Do not add it to either frontend `.env` file.
+6. Test with Paystack test keys and test cards before switching to live keys.
+
+One-time digital-product checkout can use any payment method Paystack makes available for that transaction. Recurring subscriptions may require a reusable authorization, so Paystack may not offer bank transfer or Apple Pay for subscription checkout even when those methods are available for one-time payments.
 
 ## Deployment order
 

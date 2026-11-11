@@ -127,6 +127,7 @@ function initializeTransaction({ email, amount, planCode, callbackUrl, metadata 
       currency: getCurrency(),
       ...(planCode ? { plan: planCode } : {}),
       callback_url: callbackUrl,
+      // Let Paystack show every payment channel enabled and eligible for this account.
       metadata: { application: APPLICATION, ...metadata },
     },
   });
